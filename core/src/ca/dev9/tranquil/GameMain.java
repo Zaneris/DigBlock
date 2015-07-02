@@ -33,8 +33,8 @@ public class GameMain extends ApplicationAdapter {
 	public void create () {
 		shader = createMeshShader();
 		camera = new PerspectiveCamera(75f,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-		camera.position.set(-3f, 2f, -3f);
-		camera.lookAt(0f, 0f, 0f);
+		camera.position.set(19f, 4f, 19f);
+		camera.lookAt(16f, 2f, 16f);
 		camera.near = 0.1f;
 		camera.far = 300f;
 

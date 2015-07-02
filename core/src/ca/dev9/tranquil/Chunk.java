@@ -20,16 +20,29 @@ public class Chunk {
 		for(int y = 0; y<CHUNK_SIZE; y++)
 			for(int x = 0; x<CHUNK_SIZE; x++)
 				for(int z = 0; z<CHUNK_SIZE; z++) {
-					if(y==0) {
-						blocks[x][y][z] = createBlock(Block.GRASS);
-						blocks[x][y][z].setFlag(Block.FACE_TOP);
+					if(y==0 || y==1) {
+						if(y==0) {
+							blocks[x][y][z] = createBlock(Block.DIRT);
+							blocks[x][y][z].setFlag(Block.FACE_BOTTOM);
+						} else {
+							blocks[x][y][z] = createBlock(Block.GRASS);
+							blocks[x][y][z].setFlag(Block.FACE_TOP);
+						}
 						blocks[x][y][z].setFlag(Block.SOLID);
 						visibleFaces++;
 						if(x==0) {
+							blocks[x][y][z].setFlag(Block.FACE_EAST);
+							visibleFaces++;
+						}
+						if(x==CHUNK_SIZE-1) {
 							blocks[x][y][z].setFlag(Block.FACE_WEST);
 							visibleFaces++;
 						}
 						if(z==0) {
+							blocks[x][y][z].setFlag(Block.FACE_SOUTH);
+							visibleFaces++;
+						}
+						if(z==CHUNK_SIZE-1) {
 							blocks[x][y][z].setFlag(Block.FACE_NORTH);
 							visibleFaces++;
 						}

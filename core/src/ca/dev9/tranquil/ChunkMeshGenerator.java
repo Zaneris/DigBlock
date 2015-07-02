@@ -68,12 +68,15 @@ public final class ChunkMeshGenerator {
 		chunk.hasMesh = true;
 	}
 
-	private static final Vector3 south = new Vector3(1f,1f,0f).scl(CUBE_SIZE);
-	private static final Vector3 west = new Vector3(0f,1f,1f).scl(CUBE_SIZE);
-	private static final Vector3 east = new Vector3(0f,1f,-1f).scl(CUBE_SIZE);
-	private static final Vector3 north = new Vector3(-1f,1f,0f).scl(CUBE_SIZE);
-	private static final Vector3 top = new Vector3(1f,0f,-1f).scl(CUBE_SIZE);
-	private static final Vector3 bottom = new Vector3(1f,0f,1f).scl(CUBE_SIZE);
+	private static final Vector3 north 	= new Vector3(-1f,1f, 0f).scl(CUBE_SIZE);
+	private static final Vector3 south 	= new Vector3( 1f,1f, 0f).scl(CUBE_SIZE);
+
+	private static final Vector3 east 	= new Vector3( 0f,1f,-1f).scl(CUBE_SIZE);
+	private static final Vector3 west 	= new Vector3( 0f,1f, 1f).scl(CUBE_SIZE);
+
+	private static final Vector3 top 	= new Vector3( 1f,0f, 1f).scl(CUBE_SIZE);
+	private static final Vector3 bottom = new Vector3( 1f,0f,-1f).scl(CUBE_SIZE);
+
 	private static Vector3 d;
 
 	private static void addFace(byte x, byte y, byte z, byte face, Color color) {
@@ -81,65 +84,65 @@ public final class ChunkMeshGenerator {
 			case Block.FACE_SOUTH:
 				d = south;
 				break;
+			case Block.FACE_EAST:
+				d = east;
+				z++;
+				break;
+			case Block.FACE_NORTH:
+				d = north;
+				z++;
+				x++;
+				break;
 			case Block.FACE_WEST:
-				z--;
 				d = west;
+				x++;
 				break;
 			case Block.FACE_TOP:
 				y++;
 				d = top;
 				break;
-			case Block.FACE_EAST:
-				x++;
-				d = east;
-				break;
-			case Block.FACE_NORTH:
-				x++;
-				z--;
-				d = north;
-				break;
 			case Block.FACE_BOTTOM:
 			default:
-				z--;
+				z++;
 				d = bottom;
 				break;
 		}
 
-		//bottom left vertex
-		verts[i++] = x;         //Position(x, y)
-		verts[i++] = y;
-		verts[i++] = z;
-		addColor(color);
+		// Begin Triangle #1
+			// Bottom-right
+			verts[i++] = x;
+			verts[i++] = y;
+			verts[i++] = z;
+			addColor(color);
+			// Top-right
+			verts[i++] = x;
+			verts[i++] = y + d.y;
+			verts[i++] = (face & Block.FACE_BOTTOM) + (face & Block.FACE_TOP) > 0 ? z + d.z : z;
+			addColor(color);
+			// Top-left
+			verts[i++] = x + d.x;
+			verts[i++] = y + d.y;
+			verts[i++] = z + d.z;
+			addColor(color);
+		// End Triangle #1
 
-		//top right vertex
-		verts[i++] = x + d.x;   //Position(x, y)
-		verts[i++] = y + d.y;
-		verts[i++] = z + d.z;
-		addColor(color);
-
-		//top left vertex
-		verts[i++] = x;         //Position(x, y)
-		verts[i++] = y + d.y;
-		verts[i++] = (face & Block.FACE_BOTTOM) + (face & Block.FACE_TOP) > 0 ? z + d.z : z;
-		addColor(color);
-
-		//bottom left vertex
-		verts[i++] = x;         //Position(x, y)
-		verts[i++] = y;
-		verts[i++] = z;
-		addColor(color);
-
-		//bottom right vertex
-		verts[i++] = x + d.x;   //Position(x, y)
-		verts[i++] = y;
-		verts[i++] = (face & Block.FACE_BOTTOM) + (face & Block.FACE_TOP) > 0 ? z : z + d.z;
-		addColor(color);
-
-		//top right vertex
-		verts[i++] = x + d.x;   //Position(x, y)
-		verts[i++] = y + d.y;
-		verts[i++] = z + d.z;
-		addColor(color);
+		// Begin Triangle #2
+			// Bottom-right
+			verts[i++] = x;
+			verts[i++] = y;
+			verts[i++] = z;
+			addColor(color);
+			// Top-left
+			verts[i++] = x + d.x;
+			verts[i++] = y + d.y;
+			verts[i++] = z + d.z;
+			addColor(color);
+			// Bottom-right
+			verts[i++] = x + d.x;
+			verts[i++] = y;
+			verts[i++] = (face & Block.FACE_BOTTOM) + (face & Block.FACE_TOP) > 0 ? z : z + d.z;
+			addColor(color);
+		// End Triangle #2
 	}
 
 	private static void addColor(Color color) {
