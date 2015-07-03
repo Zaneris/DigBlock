@@ -14,7 +14,6 @@ public class Chunk {
 	public final Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 	public int visibleFaces = 0;
 	public Mesh mesh;
-	public int vertexCount;
 	public boolean hasMesh = false;
 	public final short[][] heightMap = new short[CHUNK_SIZE][CHUNK_SIZE];
 	private static short max;

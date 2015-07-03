@@ -11,11 +11,12 @@ public class World {
 	public static final boolean TEXTURES_ON = false;
 	public static short chunkX, chunkZ;
 	public static Chunk[][][] chunks;
+	public static double seed;
 
 	public static void createWorld(short x, short z) {
 		chunkX = x;
 		chunkZ = z;
-		double seed = Math.random()*1000d;
+		seed = Math.random()*1000d;
 		chunks = new Chunk[x][WORLD_HEIGHT][z];
 		short[][] maxHeight = new short[Chunk.CHUNK_SIZE][Chunk.CHUNK_SIZE];
 		double temp;

@@ -8,15 +8,16 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
 public class GameMain extends ApplicationAdapter {
-	private PerspectiveCamera camera;
+	private static PerspectiveCamera camera;
+	private static ShaderProgram shader;
+	private static AssetManager assets;
 
 	private static String getShader(String path) {
-		return Gdx.files.local(path).readString();
+		return Gdx.files.internal(path).readString();
 	}
 
-	protected static ShaderProgram createMeshShader() {
+	protected void createMeshShader() {
 		ShaderProgram.pedantic = false;
-		ShaderProgram shader;
 		if(World.TEXTURES_ON) {
 			shader = new ShaderProgram(
 					getShader("VertShaderTex.glsl"),
@@ -31,17 +32,13 @@ public class GameMain extends ApplicationAdapter {
 			throw new GdxRuntimeException(log);
 		if (log!=null && log.length()!=0)
 			System.out.println("Shader Log: "+log);
-		return shader;
 	}
-
-	ShaderProgram shader;
-	AssetManager assets;
 	private static final short WORLD_SIZE = 32;
 	private static final float CAM = World.WORLD_HEIGHT*Chunk.CHUNK_SIZE;
 
 	@Override
 	public void create () {
-		shader = createMeshShader();
+		createMeshShader();
 		assets = new AssetManager();
 		assets.load("dirt.png", Texture.class);
 		camera = new PerspectiveCamera(75f,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());

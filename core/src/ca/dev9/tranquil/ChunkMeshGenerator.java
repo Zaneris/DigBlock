@@ -66,17 +66,13 @@ public final class ChunkMeshGenerator {
 			}
 		}
 		chunk.mesh.setVertices(verts,0,i);
-		chunk.vertexCount = i;
-		//System.out.println(i + " Floats set");
 		chunk.hasMesh = true;
 	}
 
 	private static final Vector3 north 	= new Vector3(-1f,1f, 0f);
 	private static final Vector3 south 	= new Vector3( 1f,1f, 0f);
-
 	private static final Vector3 east 	= new Vector3( 0f,1f,-1f);
 	private static final Vector3 west 	= new Vector3( 0f,1f, 1f);
-
 	private static final Vector3 top 	= new Vector3( 1f,0f, 1f);
 	private static final Vector3 bottom = new Vector3( 1f,0f,-1f);
 
