@@ -1,19 +1,22 @@
 package ca.dev9.tranquil.blocks;
 
+import ca.dev9.tranquil.Chunk;
 import com.badlogic.gdx.graphics.Color;
 
 /**
  * Created by Zaneris on 01/07/2015.
  */
 public class Grass extends Dirt {
-	private static final Color grass = Color.valueOf("007B0CFF");
+	private static final float grass = Color.valueOf("007B0CFF").toFloatBits();
 
-	public Grass() {
-		this.blockType = Block.GRASS;
+	public Grass(Chunk chunk) {
+		super(chunk);
+		blockType = Block.GRASS;
+		//setFlag(Block.SOLID);
 	}
 
 	@Override
-	public Color getTopColor() {
+	public float getTopColor() {
 		return grass;
 	}
 }

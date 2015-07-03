@@ -2,6 +2,7 @@ package ca.dev9.tranquil;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
@@ -15,9 +16,16 @@ public class GameMain extends ApplicationAdapter {
 
 	protected static ShaderProgram createMeshShader() {
 		ShaderProgram.pedantic = false;
-		ShaderProgram shader = new ShaderProgram(
-				getShader("VertShader.glsl"),
-				getShader("FragShader.glsl"));
+		ShaderProgram shader;
+		if(World.TEXTURES_ON) {
+			shader = new ShaderProgram(
+					getShader("VertShaderTex.glsl"),
+					getShader("FragShaderTex.glsl"));
+		} else {
+			shader = new ShaderProgram(
+					getShader("VertShader.glsl"),
+					getShader("FragShader.glsl"));
+		}
 		String log = shader.getLog();
 		if (!shader.isCompiled())
 			throw new GdxRuntimeException(log);
@@ -27,27 +35,42 @@ public class GameMain extends ApplicationAdapter {
 	}
 
 	ShaderProgram shader;
-	private Chunk chunk;
+	AssetManager assets;
+	private static final short WORLD_SIZE = 32;
+	private static final float CAM = World.WORLD_HEIGHT*Chunk.CHUNK_SIZE;
 
 	@Override
 	public void create () {
 		shader = createMeshShader();
+		assets = new AssetManager();
+		assets.load("dirt.png", Texture.class);
 		camera = new PerspectiveCamera(75f,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-		camera.position.set(19f, 4f, 19f);
-		camera.lookAt(16f, 2f, 16f);
-		camera.near = 0.1f;
-		camera.far = 300f;
+		camera.position.set(10f, CAM, 10f);
+		float halfWorld = WORLD_SIZE*8f+8f;
+		camera.lookAt(halfWorld,0f,halfWorld);
+		camera.near = 1.0f;
+		camera.far = 5000f;
 
-		chunk = new Chunk();
+		World.createWorld(WORLD_SIZE,WORLD_SIZE);
 	}
+
+	Texture tex;
+	boolean isLoaded = false;
 
 	@Override
 	public void render () {
-		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
+		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
 		//this will render the triangles to GL
-		flush();
+		if(assets.update()) {
+			if (!isLoaded) {
+				tex = assets.get("dirt.png", Texture.class);
+				isLoaded = true;
+			}
+			flush();
+		}
 	}
 
 	void flush() {
@@ -61,12 +84,17 @@ public class GameMain extends ApplicationAdapter {
 
 		//start the shader before setting any uniforms
 		shader.begin();
-
-		//update the projection matrix
+		if(World.TEXTURES_ON) {
+			tex.bind();
+			shader.setUniformi("u_diffuseTexture", 0);
+		}
 		shader.setUniformMatrix("u_projTrans", camera.combined);
 
 		//render the mesh
-		chunk.mesh.render(shader, GL20.GL_TRIANGLES, 0, chunk.vertexCount);
+		for(Chunk chunks[][]:World.chunks)
+			for(Chunk chunks2[]:chunks)
+				for(Chunk chunk: chunks2)
+					chunk.mesh.render(shader, GL20.GL_TRIANGLES, 0, chunk.mesh.getNumVertices());
 
 		shader.end();
 	}
