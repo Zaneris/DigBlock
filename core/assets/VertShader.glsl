@@ -1,5 +1,3 @@
-#version 120
-
 attribute vec3 a_position;
 attribute vec4 a_color;
 uniform mat4 u_projTrans;
