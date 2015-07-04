@@ -131,7 +131,7 @@ public class World {
 	private static Chunk tB;
 	private static final Int3 inner = new Int3();
 	public static Block getBlock(Int3 int3) {
-		inner.set(int3);
+		inner.copyFrom(int3);
 		inner.mod(CHUNK_SIZE);
 		int3.div(CHUNK_SIZE);
 		tB = chunkMap.get(int3);

@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector3;
  */
 public class Int3 {
 	public int x, y, z;
+	private Int3 loopTarget;
 
 	public Int3() {}
 
@@ -15,9 +16,9 @@ public class Int3 {
 	}
 
 	public Int3(int x, int y, int z) {
-		this.x = x + 0;
-		this.y = y + 0;
-		this.z = z + 0;
+		this.x = x;
+		this.y = y;
+		this.z = z;
 	}
 
 	@Override
@@ -34,14 +35,24 @@ public class Int3 {
 		set((int)Math.floor(v3.x), (int)Math.floor(v3.y), (int)Math.floor(v3.z));
 	}
 
+	public void setPlus(Int3 value1, Int3 value2) {
+		set(value1.x+value2.x, value1.y+value2.y, value1.z+value2.z);
+	}
+
 	public void set(Int3 int3) {
-		set(int3.x,int3.y,int3.z);
+		set(int3.x, int3.y, int3.z);
+	}
+
+	public void set(int value) {
+		this.x = value;
+		this.y = value;
+		this.z = value;
 	}
 
 	public void set(int x, int y, int z) {
-		this.x = x + 0;
-		this.y = y + 0;
-		this.z = z + 0;
+		this.x = x;
+		this.y = y;
+		this.z = z;
 	}
 
 	public void mod(int value) {
@@ -68,22 +79,68 @@ public class Int3 {
 		z*=multiple;
 	}
 
+	public void add(Int3 int3) {
+		x+=int3.x;
+		y+=int3.y;
+		z+=int3.z;
+	}
+
 	public void add(int value) {
 		x+=value;
 		y+=value;
 		z+=value;
 	}
 
-	public void copyTo(Int3 int3) {
-		int3.x = x + 0;
-		int3.y = y + 0;
-		int3.z = z + 0;
+	public void subt(int value) {
+		x-=value;
+		y-=value;
+		z-=value;
+	}
+
+	// Allow for easier to read code for all the 3D loops
+	public void newLoop(int start, int target) {
+		set(start);
+		if(loopTarget==null)
+			loopTarget = new Int3(target, target, target+1);
+		else
+			loopTarget.set(target, target, target+1);
+	}
+
+	// Circle through the 3D loop
+	public void loop() {
+		if(z<loopTarget.z-1)
+			z++;
+		else if(x<loopTarget.x) {
+			z = 0;
+			x++;
+		} else if(y<loopTarget.y) {
+			z = 0;
+			x = 0;
+			y++;
+		} else if(x==loopTarget.x)
+			z++;
+	}
+
+	public boolean doneLoop() {
+		return !this.equals(loopTarget);
+	}
+
+	public void reset() {
+		x = 0;
+		y = 0;
+		z = 0;
 	}
 
 	public void copyFrom(Int3 int3) {
-		x = int3.x + 0;
-		y = int3.y + 0;
-		z = int3.z + 0;
+		x = int3.x;
+		y = int3.y;
+		z = int3.z;
+	}
+
+	public void copyPlus(Int3 copy, Int3 plus) {
+		x = copy.x + plus.x;
+		y = copy.y + plus.y;
+		z = copy.z + plus.z;
 	}
 
 	public Int3 clone() {

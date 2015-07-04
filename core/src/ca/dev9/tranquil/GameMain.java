@@ -34,14 +34,16 @@ public class GameMain extends ApplicationAdapter {
 		if (log!=null && log.length()!=0)
 			System.out.println("Shader Log: "+log);
 	}
-	private static final short WORLD_SIZE = 12;
+	private static final short WORLD_SIZE = 20;
 	private static final float CAM = World.WORLD_HEIGHT*Chunk.CHUNK_SIZE;
 
 	@Override
 	public void create () {
 		createMeshShader();
-		assets = new AssetManager();
-		assets.load("dirt.png", Texture.class);
+		if(World.TEXTURES_ON) {
+			assets = new AssetManager();
+			assets.load("dirt.png", Texture.class);
+		}
 		camera = new PerspectiveCamera(75f,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		camera.position.set(-50f, CAM, -50f);
 		float halfWorld = WORLD_SIZE*8f+8f;
@@ -57,6 +59,7 @@ public class GameMain extends ApplicationAdapter {
 	private static int r;
 	private static final Int3 i = new Int3();
 	private static final Int3 cC = new Int3();
+	private static final Int3 target = new Int3();
 
 	@Override
 	public void render () {
@@ -68,13 +71,16 @@ public class GameMain extends ApplicationAdapter {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
 		//this will render the triangles to GL
-		if(assets.update()) {
-			if (!isLoaded) {
-				tex = assets.get("dirt.png", Texture.class);
-				isLoaded = true;
+		if(World.TEXTURES_ON) {
+			if (assets.update()) {
+				if (!isLoaded) {
+					tex = assets.get("dirt.png", Texture.class);
+					isLoaded = true;
+				}
+				flush();
 			}
+		} else
 			flush();
-		}
 	}
 	Chunk chunk;
 	void flush() {
@@ -96,25 +102,27 @@ public class GameMain extends ApplicationAdapter {
 
 		cC.set(camera.position);
 		cC.div(Chunk.CHUNK_SIZE);
-		int j = 0;
-		for(r = 0; r<WORLD_SIZE; r++)
-			for(i.y = -r; i.y<=r; i.y++)
-				if(cC.y+i.y>=0 && cC.y+i.y<World.WORLD_HEIGHT)
-					for(i.x = -r; i.x<=r; i.x++)
-						if(Math.abs(cC.x+i.x)<32768)
-							for(i.z = -r; i.z<=r; i.z++)
-								if(Math.abs(cC.z+i.z)<32768)
-									if(Math.abs(i.x)==r || Math.abs(i.y)==r || Math.abs(i.z)==r) {
-										chunk = World.chunkMap.get(cC.x+i.x, cC.y+i.y, cC.z+i.z);
-										if(chunk == null) {
-											chunk = new Chunk(cC.x + i.x, cC.y + i.y, cC.z + i.z);
-											World.buildQueue.add(chunk);
-											chunk.addToMap();
-										}
-										else if (chunk.hasMesh) {
-											chunk.mesh.render(shader, GL20.GL_TRIANGLES, 0, chunk.mesh.getNumVertices());
-										}
-									}
+		for(r = 0; r<WORLD_SIZE; r++) {
+			i.set(-r);
+			for (i.newLoop(-r,r); i.doneLoop(); i.loop()) {
+				if(i.x>=0 && i.z>=0) { // TODO - Remove this to render behind you.
+					target.setPlus(i, cC);
+					if (target.y >= 0 && target.y < World.WORLD_HEIGHT &&
+							Math.abs(target.x) < 32768 &&
+							Math.abs(target.z) < 32768)
+						if (Math.abs(i.x) == r || Math.abs(i.y) == r || Math.abs(i.z) == r) {
+							chunk = World.chunkMap.get(target);
+							if (chunk == null) {
+								chunk = new Chunk(target);
+								World.buildQueue.add(chunk);
+								chunk.addToMap();
+							} else if (chunk.hasMesh) {
+								chunk.mesh.render(shader, GL20.GL_TRIANGLES, 0, chunk.mesh.getNumVertices());
+							}
+						}
+				}
+			}
+		}
 		shader.end();
 	}
 }

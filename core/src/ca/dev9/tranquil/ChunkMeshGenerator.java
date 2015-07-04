@@ -1,6 +1,7 @@
 package ca.dev9.tranquil;
 
 import ca.dev9.tranquil.blocks.Block;
+import ca.dev9.tranquil.utils.Int3;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
@@ -10,6 +11,7 @@ import com.badlogic.gdx.math.Vector3;
  * Created by Zaneris on 29/06/2015.
  */
 public final class ChunkMeshGenerator {
+	private static final byte CHUNK_SIZE = World.CHUNK_SIZE;
 	private static final byte POSITION_COMPONENTS = 3;
 	private static final byte COLOR_COMPONENTS = 1;
 	private static final byte TEXTURE_COORDS = 2;
@@ -31,41 +33,29 @@ public final class ChunkMeshGenerator {
 	private static final float[] verts = new float[MAX_VERTS];
 	private static int numFloats;
 	private static Block block;
-	private static int x;
-	private static int y;
-	private static int z;
-	private static int i;
+	private static int j;
+	private static final Int3 p = new Int3();
+	private static final Int3 i = new Int3();
+	private static final Int3 target = new Int3();
+	private static byte faces;
 
 	public static void createMesh(Chunk chunk) {
-		if (chunk.hasMesh) chunk.mesh.dispose();
+		if (chunk.mesh != null) chunk.mesh.dispose();
 		numFloats = chunk.visibleFaces * TRIS_PER_FACE * VERTS_PER_TRI * NUM_COMPONENTS;
 		chunk.mesh = new Mesh(true, numFloats, 0, a_position, (World.TEXTURES_ON ? a_texCoords : a_color));
 
-		i = 0;
-
-		for(y=chunk.yOff;y<chunk.yOff+Chunk.CHUNK_SIZE;y++) {
-			for(x=chunk.xOff;x<chunk.xOff+Chunk.CHUNK_SIZE;x++) {
-				for(z=chunk.zOff;z<chunk.zOff+Chunk.CHUNK_SIZE;z++) {
-					// TODO - Fix visible faces check
-					if(chunk.blocks[x-chunk.xOff][y-chunk.yOff][z-chunk.zOff].visibleFaces>0) {
-						block = chunk.blocks[x-chunk.xOff][y-chunk.yOff][z-chunk.zOff];
-						if (block.hasFlag(Block.FACE_BOTTOM))
-							addFace(x,y,z,Block.FACE_BOTTOM,block.getSideColor());
-						if (block.hasFlag(Block.FACE_NORTH))
-							addFace(x,y,z,Block.FACE_NORTH,block.getSideColor());
-						if (block.hasFlag(Block.FACE_SOUTH))
-							addFace(x,y,z,Block.FACE_SOUTH,block.getSideColor());
-						if (block.hasFlag(Block.FACE_EAST))
-							addFace(x,y,z,Block.FACE_EAST,block.getSideColor());
-						if (block.hasFlag(Block.FACE_WEST))
-							addFace(x,y,z,Block.FACE_WEST,block.getSideColor());
-						if (block.hasFlag(Block.FACE_TOP))
-							addFace(x, y, z, Block.FACE_TOP,block.getTopColor());
-					}
-				}
+		j = 0; // Reset number of floats/vertices
+		p.copyFrom(chunk.getChunkPosition());
+		for(i.newLoop(0,CHUNK_SIZE-1);i.doneLoop();i.loop()) {
+			block = chunk.getBlock(i);
+			if (block.hasFaces()) {
+				faces = block.copyFaces();
+				target.copyPlus(i, p);
+				addFaces(block.getSideColor(), block.getTopColor());
 			}
 		}
-		chunk.mesh.setVertices(verts,0,i);
+		// Add vertices to new mesh
+		chunk.mesh.setVertices(verts,0,j);
 		chunk.hasMesh = true;
 	}
 
@@ -79,80 +69,98 @@ public final class ChunkMeshGenerator {
 	private static Vector3 d;
 	private static int idx = 0;
 
-	private static void addFace(float x, float y, float z, byte face, float c) {
-		switch(face) {
-			case Block.FACE_SOUTH:
-				d = south;
-				break;
-			case Block.FACE_EAST:
-				d = east;
-				z+=1f;
-				break;
-			case Block.FACE_NORTH:
-				d = north;
-				z+=1f;
-				x+=1f;
-				break;
-			case Block.FACE_WEST:
-				d = west;
-				x+=1f;
-				break;
-			case Block.FACE_TOP:
-				y+=1f;
-				d = top;
-				break;
-			case Block.FACE_BOTTOM:
-			default:
-				z+=1f;
+	private static float x,y,z,c;
+	private static void addFaces(float sideColor, float topColor) {
+		do {
+			x = target.x;
+			y = target.y;
+			z = target.z;
+			if(hasFlag(Block.FACE_BOTTOM)) {
+				z += 1f;
 				d = bottom;
-				break;
-		}
+				c = sideColor;
+				removeFlag(Block.FACE_BOTTOM);
+			} else if(hasFlag(Block.FACE_SOUTH)) {
+				d = south;
+				c = sideColor;
+				removeFlag(Block.FACE_SOUTH);
+			} else if(hasFlag(Block.FACE_EAST)) {
+				d = east;
+				z += 1f;
+				c = sideColor;
+				removeFlag(Block.FACE_EAST);
+			} else if(hasFlag(Block.FACE_NORTH)) {
+				d = north;
+				z += 1f;
+				x += 1f;
+				c = sideColor;
+				removeFlag(Block.FACE_NORTH);
+			} else if(hasFlag(Block.FACE_WEST)) {
+				d = west;
+				x += 1f;
+				c = sideColor;
+				removeFlag(Block.FACE_WEST);
+			} else if(hasFlag(Block.FACE_TOP)) {
+				y += 1f;
+				d = top;
+				c = topColor;
+				removeFlag(Block.FACE_TOP);
+			} else break; // <-- Should never actually occur.
 
-		for(idx = 0; idx<6; idx++) {
-			switch (idx) {
-				case 0:
-				case 3:
-					verts[i++] = x;
-					verts[i++] = y;
-					verts[i++] = z;
-					if (World.TEXTURES_ON) {
-						verts[i++] = 1f;
-						verts[i++] = 0f;
-					} else
-						verts[i++] = c;
-					break;
-				case 1:
-					verts[i++] = x;
-					verts[i++] = y + d.y;
-					verts[i++] = (face & Block.FACE_BOTTOM) + (face & Block.FACE_TOP) > 0 ? z + d.z : z;
-					if (World.TEXTURES_ON) {
-						verts[i++] = 1f;
-						verts[i++] = 1f;
-					} else
-						verts[i++] = c;
-					break;
-				case 2:
-				case 4:
-					verts[i++] = x + d.x;
-					verts[i++] = y + d.y;
-					verts[i++] = z + d.z;
-					if (World.TEXTURES_ON) {
-						verts[i++] = 0f;
-						verts[i++] = 1f;
-					} else
-						verts[i++] = c;
-					break;
-				case 5:
-					verts[i++] = x + d.x;
-					verts[i++] = y;
-					verts[i++] = (face & Block.FACE_BOTTOM) + (face & Block.FACE_TOP) > 0 ? z : z + d.z;
-					if (World.TEXTURES_ON) {
-						verts[i++] = 0f;
-						verts[i++] = 0f;
-					} else
-						verts[i++] = c;
-					break;
+			for (idx = 0; idx < 6; idx++) {
+				switch (idx) {
+					case 0:
+					case 3:
+						verts[j++] = x;
+						verts[j++] = y;
+						verts[j++] = z;
+						if (World.TEXTURES_ON) {
+							verts[j++] = 1f;
+							verts[j++] = 0f;
+						} else
+							verts[j++] = c;
+						break;
+					case 1:
+						verts[j++] = x;
+						verts[j++] = y + d.y;
+						verts[j++] = d==top || d==bottom ? z + d.z : z;
+						if (World.TEXTURES_ON) {
+							verts[j++] = 1f;
+							verts[j++] = 1f;
+						} else
+							verts[j++] = c;
+						break;
+					case 2:
+					case 4:
+						verts[j++] = x + d.x;
+						verts[j++] = y + d.y;
+						verts[j++] = z + d.z;
+						if (World.TEXTURES_ON) {
+							verts[j++] = 0f;
+							verts[j++] = 1f;
+						} else
+							verts[j++] = c;
+						break;
+					case 5:
+						verts[j++] = x + d.x;
+						verts[j++] = y;
+						verts[j++] = d==top || d==bottom ? z : z + d.z;
+						if (World.TEXTURES_ON) {
+							verts[j++] = 0f;
+							verts[j++] = 0f;
+						} else
+							verts[j++] = c;
+						break;
+				}
 			}
-		}
+		} while (faces>0);
+	}
+
+	private static void removeFlag(byte flag) {
+		faces = (byte)(faces^flag);
+	}
+
+	private static boolean hasFlag(byte flag) {
+		return (byte)(faces&flag)>0;
 	}
 }

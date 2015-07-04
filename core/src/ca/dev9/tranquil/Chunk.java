@@ -14,7 +14,6 @@ public class Chunk {
 	private static final Int3 chunkCenter = new Int3();
 	public final Int3 id = new Int3();
 	private static final Int3 position = new Int3();
-	public int xOff, yOff, zOff;
 	public Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 	public int visibleFaces = 0;
 	public Mesh mesh;
@@ -27,11 +26,8 @@ public class Chunk {
 
 	public Chunk(int x, int y, int z) {
 		id.set(x, y, z);
-		position.set(id);
+		position.copyFrom(id);
 		position.mult(CHUNK_SIZE);
-		xOff = position.x;
-		yOff = position.y;
-		zOff = position.z;
 	}
 
 	public void createBlock(byte type, Int3 location) {
@@ -89,7 +85,7 @@ public class Chunk {
 	}
 
 	public Int3 getChunkPosition() {
-		position.set(id);
+		position.copyFrom(id);
 		position.mult(CHUNK_SIZE);
 		return position;
 	}
