@@ -103,7 +103,6 @@ public class GameMain extends ApplicationAdapter {
 		cC.set(camera.position);
 		cC.div(Chunk.CHUNK_SIZE);
 		for(r = 0; r<WORLD_SIZE; r++) {
-			i.set(-r);
 			for (i.newLoop(-r,r); i.doneLoop(); i.loop()) {
 				if(i.x>=0 && i.z>=0) { // TODO - Remove this to render behind you.
 					target.setPlus(i, cC);
