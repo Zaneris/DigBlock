@@ -1,92 +1,142 @@
 package ca.dev9.tranquil;
 
 import ca.dev9.tranquil.blocks.Block;
+import ca.dev9.tranquil.utils.Int3;
+
+import java.util.ArrayList;
 
 /**
  * Created by Zaneris on 02/07/2015.
  */
 public class World {
-	public static final byte WORLD_HEIGHT = 4; // Height of world in chunks
-	public static final byte WH = WORLD_HEIGHT * Chunk.CHUNK_SIZE;
+	public static final byte WORLD_HEIGHT = 2; // Height of world in chunks
+	public static final byte CHUNK_SIZE = 16;
+	public static final float TERRAIN_INTENSITY = 0.01f;
+	public static final short DRAW_DISTANCE = 100;
 	public static final boolean TEXTURES_ON = false;
-	public static short chunkX, chunkZ;
-	public static Chunk[][][] chunks;
+	public static final ChunkMap<Integer,Chunk> chunkMap = new ChunkMap<Integer,Chunk>();
+	public static final ArrayList<Chunk> buildQueue = new ArrayList<Chunk>();
+	public static final ArrayList<Chunk> faceQueue = new ArrayList<Chunk>();
+	public static final ArrayList<Chunk> meshQueue = new ArrayList<Chunk>();
 	public static double seed;
 
-	public static void createWorld(short x, short z) {
-		chunkX = x;
-		chunkZ = z;
-		seed = Math.random()*1000d;
-		chunks = new Chunk[x][WORLD_HEIGHT][z];
-		short[][] maxHeight = new short[Chunk.CHUNK_SIZE][Chunk.CHUNK_SIZE];
-		double temp;
-		for(short x2 = 0; x2<x; x2++)
-			for(short z2 = 0; z2<z; z2++) {
-				for(int x3 = 0; x3<Chunk.CHUNK_SIZE; x3++)
-					for(int z3 = 0; z3<Chunk.CHUNK_SIZE; z3++) {
-						temp = (1d + SimplexNoise.noise(((x3+seed+x2*Chunk.CHUNK_SIZE))/200,
-								((z3+seed+z2*Chunk.CHUNK_SIZE))/200))*WH/2;
-						maxHeight[x3][z3] = (short)temp;
-						if(maxHeight[x3][z3]<1)
-							maxHeight[x3][z3]=1;
-						else if (maxHeight[x3][z3]>=WH)
-							maxHeight[x3][z3] = WH-1;
-					}
-				for(byte y = 0; y<WORLD_HEIGHT; y++) {
-					chunks[x2][y][z2] = new Chunk(x2,y,z2,maxHeight);
-				}
-			}
-		setVisibleFaces();
-		createMeshes(chunks);
+	public static void createNewWorld() {
+		seed = Math.random()*10000d;
 	}
 
-	public static void createMeshes(Chunk[][][] chunks) {
-		for(Chunk[][] chunks1:chunks)
-			for(Chunk[] chunks2:chunks1)
-				for(Chunk chunk:chunks2)
-					ChunkMeshGenerator.createMesh(chunk);
-	}
-
-	public static void setVisibleFaces() {
-		Block block;
-		Block block2;
-		for(int x = 0; x<chunkX*Chunk.CHUNK_SIZE; x++)
-			for(int z = 0; z<chunkZ*Chunk.CHUNK_SIZE; z++)
-				for(short y = WORLD_HEIGHT*Chunk.CHUNK_SIZE-1; y>=0; y--) {
-					block = getBlock(x,y,z);
-					if(block!=null) {
-						if(block.blockType!=Block.AIR) {
-							block.setFlag(Block.FACE_TOP);
-							break;
-						} else {
-							block2 = getBlock(x+1,y,z);
-							if(block2!=null && block2.blockType!=Block.AIR)
-								block2.setFlag(Block.FACE_EAST);
-							block2 = getBlock(x-1,y,z);
-							if(block2!=null && block2.blockType!=Block.AIR)
-								block2.setFlag(Block.FACE_WEST);
-							block2 = getBlock(x,y,z+1);
-							if(block2!=null && block2.blockType!=Block.AIR)
-								block2.setFlag(Block.FACE_SOUTH);
-							block2 = getBlock(x,y,z-1);
-							if(block2!=null && block2.blockType!=Block.AIR)
-								block2.setFlag(Block.FACE_NORTH);
+	private static Chunk chunk;
+	private static final Int3 i = new Int3();
+	private static Int3 p;
+	private static int j;
+	public static void buildChunks() {
+		if(!buildQueue.isEmpty()) {
+			chunk = buildQueue.get(0);
+			p = chunk.getChunkPosition();
+			for(i.x = 0; i.x<Chunk.CHUNK_SIZE; i.x++)
+				for(i.z = 0; i.z<Chunk.CHUNK_SIZE; i.z++) {
+					j = terrainHeight(i.x + p.x, i.z + p.z);
+					for (i.y = 0; i.y < Chunk.CHUNK_SIZE; i.y++) {
+						if (i.y + p.y < j)
+							chunk.createBlock(Block.DIRT, i);
+						else if (i.y + p.y == j)
+							chunk.createBlock(Block.GRASS, i);
+						else {
+							chunk.createBlock(Block.AIR, i);
 						}
 					}
 				}
+			faceQueue.add(chunk);
+			buildQueue.remove(0);
+		}
 	}
 
-	public static Block getBlock(int x, short y, int z) {
-		byte bX = (byte)(x%16);
-		byte bY = (byte)(y%16);
-		byte bZ = (byte)(z%16);
-		short cX = (short)((x-bX)/16);
-		short cY = (short)((y-bY)/16);
-		short cZ = (short)((z-bZ)/16);
-		if(cX<0 || cY < 0 || cZ < 0 || cX >= chunkX || cY >= WORLD_HEIGHT || cZ >= chunkZ)
+	private static double noise;
+	public static short terrainHeight(int x, int z) {
+		noise = (1d + SimplexNoise.noise(
+				seed+(x*TERRAIN_INTENSITY),
+				seed+(z*TERRAIN_INTENSITY)))
+				* WORLD_HEIGHT*CHUNK_SIZE/2;
+		if(noise<1d)
+			return 1;
+		if(noise>=WORLD_HEIGHT*CHUNK_SIZE)
+			return WORLD_HEIGHT*CHUNK_SIZE-1;
+		return (short)Math.floor(noise);
+	}
+
+	public static void createMeshes() {
+		if(!meshQueue.isEmpty()) {
+			for(Chunk chunk:meshQueue) {
+				ChunkMeshGenerator.createMesh(chunk);
+				chunk.wait = false;
+			}
+			meshQueue.clear();
+		}
+	}
+
+	private static Block block;
+	private static Block block2;
+	private static boolean isVoid;
+	private static boolean solid;
+	public static void updateFaces() {
+		if(!faceQueue.isEmpty()) {
+			for(Chunk chunk:faceQueue) {
+				p = chunk.getChunkPosition();
+				for(i.x = 0 + p.x; i.x<p.x+CHUNK_SIZE; i.x++)
+					for(i.z = 0 + p.z; i.z<p.z+CHUNK_SIZE; i.z++)
+						for(i.y = 0 + p.y; i.y<p.y+CHUNK_SIZE; i.y++) {
+							block = getBlock(i.x,i.y,i.z);
+							isVoid = (block == null || !block.hasFlag(Block.SOLID));
+
+							block2 = getBlock(i.x+1,i.y,i.z);
+							solid = block2!=null && block2.hasFlag(Block.SOLID);
+							if(solid) block2.setFlag(isVoid, Block.FACE_EAST);
+							if(!isVoid) block.setFlag(!solid, Block.FACE_WEST);
+
+							block2 = getBlock(i.x-1,i.y,i.z);
+							solid = block2!=null && block2.hasFlag(Block.SOLID);
+							if(solid) block2.setFlag(isVoid, Block.FACE_WEST);
+							if(!isVoid) block.setFlag(!solid, Block.FACE_EAST);
+
+							block2 = getBlock(i.x,i.y,i.z+1);
+							solid = block2!=null && block2.hasFlag(Block.SOLID);
+							if(solid) block2.setFlag(isVoid, Block.FACE_SOUTH);
+							if(!isVoid) block.setFlag(!solid, Block.FACE_NORTH);
+
+							block2 = getBlock(i.x,i.y,i.z-1);
+							solid = block2!=null && block2.hasFlag(Block.SOLID);
+							if(solid) block2.setFlag(isVoid, Block.FACE_NORTH);
+							if(!isVoid) block.setFlag(!solid, Block.FACE_SOUTH);
+
+							block2 = getBlock(i.x,i.y+1,i.z);
+							solid = block2!=null && block2.hasFlag(Block.SOLID);
+							if(solid) block2.setFlag(isVoid, Block.FACE_BOTTOM);
+							if(!isVoid) block.setFlag(!solid, Block.FACE_TOP);
+
+							block2 = getBlock(i.x,i.y-1,i.z);
+							solid = block2!=null && block2.hasFlag(Block.SOLID);
+							if(solid) block2.setFlag(isVoid, Block.FACE_TOP);
+							if(!isVoid) block.setFlag(!solid, Block.FACE_BOTTOM);
+						}
+			}
+			faceQueue.clear();
+		}
+	}
+
+
+	private static final Int3 temp = new Int3();
+	public static Block getBlock(int x, int y, int z) {
+		temp.set(x, y, z);
+		return getBlock(temp);
+	}
+	private static Chunk tB;
+	private static final Int3 inner = new Int3();
+	public static Block getBlock(Int3 int3) {
+		inner.set(int3);
+		inner.mod(CHUNK_SIZE);
+		int3.div(CHUNK_SIZE);
+		tB = chunkMap.get(int3);
+		if(tB==null)
 			return null;
-		if(bX<0 || bY < 0 || bZ < 0 || bX > 15 || bY > 15 || bZ > 15)
-			return null;
-		return chunks[cX][cY][cZ].blocks[bX][bY][bZ];
+		return tB.getBlock(inner);
 	}
 }

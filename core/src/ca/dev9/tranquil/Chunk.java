@@ -3,52 +3,46 @@ package ca.dev9.tranquil;
 import ca.dev9.tranquil.blocks.Block;
 import ca.dev9.tranquil.blocks.Dirt;
 import ca.dev9.tranquil.blocks.Grass;
+import ca.dev9.tranquil.utils.Int3;
 import com.badlogic.gdx.graphics.Mesh;
 
 /**
  * Created by Zaneris on 29/06/2015.
  */
 public class Chunk {
-	public static final byte CHUNK_SIZE = 16; // 32 max
+	public static final byte CHUNK_SIZE = World.CHUNK_SIZE; // 32 max
+	private static final Int3 chunkCenter = new Int3();
+	public final Int3 id = new Int3();
+	private static final Int3 position = new Int3();
 	public int xOff, yOff, zOff;
-	public final Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+	public Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 	public int visibleFaces = 0;
 	public Mesh mesh;
 	public boolean hasMesh = false;
-	public final short[][] heightMap = new short[CHUNK_SIZE][CHUNK_SIZE];
-	private static short max;
-	private static byte tX, tY, tZ;
+	public boolean wait = false; // Awaiting new mesh
 
-	public Chunk(short locX, byte locY, short locZ, short[][] heightMap) {
-		xOff = locX * CHUNK_SIZE;
-		yOff = locY * CHUNK_SIZE;
-		zOff = locZ * CHUNK_SIZE;
-		for(tX = 0; tX <CHUNK_SIZE; tX++)
-			for(tZ = 0; tZ <CHUNK_SIZE; tZ++) {
-				this.heightMap[tX][tZ] = heightMap[tX][tZ];
-				if(this.heightMap[tX][tZ] < 1)
-					this.heightMap[tX][tZ] = 1;
-			}
-		for(tX = 0; tX <CHUNK_SIZE; tX++)
-			for(tZ = 0; tZ <CHUNK_SIZE; tZ++) {
-				max = heightMap[tX][tZ];
-				for(tY = 0; tY <CHUNK_SIZE; tY++)
-					if(yOff+ tY <=max) {
-						if(yOff+ tY ==max) {
-							blocks[tX][tY][tZ] = createBlock(Block.GRASS);
-							//blocks[tX][tY][tZ].setFlag(Block.FACE_TOP);
-						} else blocks[tX][tY][tZ] = createBlock(Block.DIRT);
-					} else {
-						blocks[tX][tY][tZ] = createBlock(Block.AIR);
-					}
-				}
+	public Chunk(Int3 int3) {
+		this(int3.x, int3.y, int3.z);
 	}
 
-	public Block getBlock(int x, int y, int z) {
-		if(x-xOff<CHUNK_SIZE && x-xOff>=0)
-			return blocks[x-xOff][y-yOff][z-zOff];
-		else
-			return null;
+	public Chunk(int x, int y, int z) {
+		id.set(x, y, z);
+		position.set(id);
+		position.mult(CHUNK_SIZE);
+		xOff = position.x;
+		yOff = position.y;
+		zOff = position.z;
+	}
+
+	public void createBlock(byte type, Int3 location) {
+		blocks[location.x][location.y][location.z] = createBlock(type);
+	}
+
+	public void addToMeshQueue() {
+		if(!wait) {
+			World.meshQueue.add(this);
+			wait = true;
+		}
 	}
 
 	private Block createBlock(byte type) {
@@ -60,5 +54,47 @@ public class Chunk {
 			default:
 				return new Block(this);
 		}
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) return true;
+		if(obj == null || this.getClass() != obj.getClass())
+			return false;
+		return id.equals(((Chunk)obj).id);
+	}
+
+	@Override
+	public int hashCode() {
+		return generateHash(id.x, id.y, id.z);
+	}
+
+	public static int generateHash(int x, int y, int z) {
+		return generateHash((short)x, (short)y, (short)z);
+	}
+
+	public static int generateHash(short x, short y, short z) {
+		return (y*521 + x)*31963 + z;
+	}
+
+	public void addToMap() {
+		World.chunkMap.put(hashCode(), this);
+	}
+
+	public static Int3 getCenterOfChunk(int x, int y, int z) {
+		chunkCenter.set(x,y,z);
+		chunkCenter.mult(CHUNK_SIZE);
+		chunkCenter.add(8);
+		return chunkCenter;
+	}
+
+	public Int3 getChunkPosition() {
+		position.set(id);
+		position.mult(CHUNK_SIZE);
+		return position;
+	}
+
+	public Block getBlock(Int3 int3) {
+		return blocks[int3.x][int3.y][int3.z];
 	}
 }

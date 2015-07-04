@@ -12,7 +12,7 @@ public class Dirt extends Block {
 	public Dirt(Chunk chunk) {
 		super(chunk);
 		blockType = Block.DIRT;
-		//setFlag(Block.SOLID);
+		setFlag(SOLID);
 	}
 
 	@Override

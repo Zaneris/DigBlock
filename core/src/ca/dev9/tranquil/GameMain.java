@@ -1,5 +1,6 @@
 package ca.dev9.tranquil;
 
+import ca.dev9.tranquil.utils.Int3;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
@@ -33,7 +34,7 @@ public class GameMain extends ApplicationAdapter {
 		if (log!=null && log.length()!=0)
 			System.out.println("Shader Log: "+log);
 	}
-	private static final short WORLD_SIZE = 32;
+	private static final short WORLD_SIZE = 12;
 	private static final float CAM = World.WORLD_HEIGHT*Chunk.CHUNK_SIZE;
 
 	@Override
@@ -42,20 +43,26 @@ public class GameMain extends ApplicationAdapter {
 		assets = new AssetManager();
 		assets.load("dirt.png", Texture.class);
 		camera = new PerspectiveCamera(75f,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-		camera.position.set(10f, CAM, 10f);
+		camera.position.set(-50f, CAM, -50f);
 		float halfWorld = WORLD_SIZE*8f+8f;
 		camera.lookAt(halfWorld,0f,halfWorld);
 		camera.near = 1.0f;
 		camera.far = 5000f;
 
-		World.createWorld(WORLD_SIZE,WORLD_SIZE);
+		World.createNewWorld();
 	}
 
-	Texture tex;
-	boolean isLoaded = false;
+	private static Texture tex;
+	private static boolean isLoaded = false;
+	private static int r;
+	private static final Int3 i = new Int3();
+	private static final Int3 cC = new Int3();
 
 	@Override
 	public void render () {
+		World.buildChunks();
+		World.updateFaces();
+		World.createMeshes();
 		Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
 		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
@@ -69,7 +76,7 @@ public class GameMain extends ApplicationAdapter {
 			flush();
 		}
 	}
-
+	Chunk chunk;
 	void flush() {
 		//enable blending, for alpha
 		Gdx.gl.glEnable(GL20.GL_BLEND);
@@ -87,12 +94,27 @@ public class GameMain extends ApplicationAdapter {
 		}
 		shader.setUniformMatrix("u_projTrans", camera.combined);
 
-		//render the mesh
-		for(Chunk chunks[][]:World.chunks)
-			for(Chunk chunks2[]:chunks)
-				for(Chunk chunk: chunks2)
-					chunk.mesh.render(shader, GL20.GL_TRIANGLES, 0, chunk.mesh.getNumVertices());
-
+		cC.set(camera.position);
+		cC.div(Chunk.CHUNK_SIZE);
+		int j = 0;
+		for(r = 0; r<WORLD_SIZE; r++)
+			for(i.y = -r; i.y<=r; i.y++)
+				if(cC.y+i.y>=0 && cC.y+i.y<World.WORLD_HEIGHT)
+					for(i.x = -r; i.x<=r; i.x++)
+						if(Math.abs(cC.x+i.x)<32768)
+							for(i.z = -r; i.z<=r; i.z++)
+								if(Math.abs(cC.z+i.z)<32768)
+									if(Math.abs(i.x)==r || Math.abs(i.y)==r || Math.abs(i.z)==r) {
+										chunk = World.chunkMap.get(cC.x+i.x, cC.y+i.y, cC.z+i.z);
+										if(chunk == null) {
+											chunk = new Chunk(cC.x + i.x, cC.y + i.y, cC.z + i.z);
+											World.buildQueue.add(chunk);
+											chunk.addToMap();
+										}
+										else if (chunk.hasMesh) {
+											chunk.mesh.render(shader, GL20.GL_TRIANGLES, 0, chunk.mesh.getNumVertices());
+										}
+									}
 		shader.end();
 	}
 }

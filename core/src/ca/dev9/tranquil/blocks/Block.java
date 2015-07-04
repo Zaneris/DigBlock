@@ -1,14 +1,13 @@
 package ca.dev9.tranquil.blocks;
 
 import ca.dev9.tranquil.Chunk;
-import com.badlogic.gdx.graphics.Color;
 
 /**
  * Created by Zaneris on 29/06/2015.
  */
 public class Block {
-	public byte visibleFaces = 0b0000_0000;;
-	//public static final byte SOLID       = 0b0100_0000;
+	public byte visibleFaces = 0b0000_0000;
+	public static final byte SOLID       = 0b0100_0000;
 	public static final byte FACE_TOP    = 0b0010_0000;
 	public static final byte FACE_BOTTOM = 0b0001_0000;
 	public static final byte FACE_NORTH  = 0b0000_1000;
@@ -28,15 +27,27 @@ public class Block {
 	}
 
 	public void setFlag(byte flag) {
-		if(hasFlag(flag)) {
-			System.out.println("Block flag problem " + Byte.toString(visibleFaces) + " " + Byte.toString(flag));
-			return;
-		}
+		if(hasFlag(flag)) return;
 		if(blockType==AIR)
 			return;
 		visibleFaces = (byte)(visibleFaces|flag);
-		//if(flag!=SOLID)
 			chunk.visibleFaces++;
+		chunk.addToMeshQueue();
+	}
+
+	public void setFlag(boolean yes, byte flag) {
+		if(yes)
+			setFlag(flag);
+		else
+			removeFlag(flag);
+	}
+
+	public void removeFlag(byte flag) {
+		if(!hasFlag(flag))
+			return;
+		visibleFaces = (byte)(visibleFaces^flag);
+			chunk.visibleFaces--;
+		chunk.addToMeshQueue();
 	}
 
 	public boolean hasFlag(byte flag) {

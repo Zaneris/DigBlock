@@ -12,7 +12,7 @@ public class Grass extends Dirt {
 	public Grass(Chunk chunk) {
 		super(chunk);
 		blockType = Block.GRASS;
-		//setFlag(Block.SOLID);
+		setFlag(SOLID);
 	}
 
 	@Override

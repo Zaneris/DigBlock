@@ -39,7 +39,6 @@ public final class ChunkMeshGenerator {
 	public static void createMesh(Chunk chunk) {
 		if (chunk.hasMesh) chunk.mesh.dispose();
 		numFloats = chunk.visibleFaces * TRIS_PER_FACE * VERTS_PER_TRI * NUM_COMPONENTS;
-		//System.out.println(numFloats + " Max floats");
 		chunk.mesh = new Mesh(true, numFloats, 0, a_position, (World.TEXTURES_ON ? a_texCoords : a_color));
 
 		i = 0;
@@ -47,6 +46,7 @@ public final class ChunkMeshGenerator {
 		for(y=chunk.yOff;y<chunk.yOff+Chunk.CHUNK_SIZE;y++) {
 			for(x=chunk.xOff;x<chunk.xOff+Chunk.CHUNK_SIZE;x++) {
 				for(z=chunk.zOff;z<chunk.zOff+Chunk.CHUNK_SIZE;z++) {
+					// TODO - Fix visible faces check
 					if(chunk.blocks[x-chunk.xOff][y-chunk.yOff][z-chunk.zOff].visibleFaces>0) {
 						block = chunk.blocks[x-chunk.xOff][y-chunk.yOff][z-chunk.zOff];
 						if (block.hasFlag(Block.FACE_BOTTOM))
