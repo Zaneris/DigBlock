@@ -11,6 +11,7 @@ import java.util.ArrayList;
 public class World {
 	public static final byte WORLD_HEIGHT = 2; // Height of world in chunks
 	public static final byte CHUNK_SIZE = 16;
+	public static final byte FRAMES_PER_CYCLE = 10;
 	public static final float TERRAIN_INTENSITY = 0.01f;
 	public static final short DRAW_DISTANCE = 100;
 	public static final boolean TEXTURES_ON = false;
@@ -32,8 +33,8 @@ public class World {
 		if(!buildQueue.isEmpty()) {
 			chunk = buildQueue.get(0);
 			p = chunk.getChunkPosition();
-			for(i.x = 0; i.x<Chunk.CHUNK_SIZE; i.x++)
-				for(i.z = 0; i.z<Chunk.CHUNK_SIZE; i.z++) {
+			for (i.x = 0; i.x < Chunk.CHUNK_SIZE; i.x++)
+				for (i.z = 0; i.z < Chunk.CHUNK_SIZE; i.z++) {
 					j = terrainHeight(i.x + p.x, i.z + p.z);
 					for (i.y = 0; i.y < Chunk.CHUNK_SIZE; i.y++) {
 						if (i.y + p.y < j)
@@ -65,60 +66,50 @@ public class World {
 
 	public static void createMeshes() {
 		if(!meshQueue.isEmpty()) {
-			for(Chunk chunk:meshQueue) {
-				ChunkMeshGenerator.createMesh(chunk);
-				chunk.wait = false;
-			}
-			meshQueue.clear();
+			chunk = meshQueue.get(0);
+			ChunkMeshGenerator.createMesh(chunk);
+			chunk.wait = false;
+			meshQueue.remove(0);
 		}
 	}
 
 	private static Block block;
 	private static Block block2;
-	private static boolean isVoid;
+	private static boolean empty;
 	private static boolean solid;
 	public static void updateFaces() {
 		if(!faceQueue.isEmpty()) {
-			for(Chunk chunk:faceQueue) {
-				p = chunk.getChunkPosition();
-				for(i.x = 0 + p.x; i.x<p.x+CHUNK_SIZE; i.x++)
-					for(i.z = 0 + p.z; i.z<p.z+CHUNK_SIZE; i.z++)
-						for(i.y = 0 + p.y; i.y<p.y+CHUNK_SIZE; i.y++) {
-							block = getBlock(i.x,i.y,i.z);
-							isVoid = (block == null || !block.hasFlag(Block.SOLID));
-
-							block2 = getBlock(i.x+1,i.y,i.z);
-							solid = block2!=null && block2.hasFlag(Block.SOLID);
-							if(solid) block2.setFlag(isVoid, Block.FACE_EAST);
-							if(!isVoid) block.setFlag(!solid, Block.FACE_WEST);
-
-							block2 = getBlock(i.x-1,i.y,i.z);
-							solid = block2!=null && block2.hasFlag(Block.SOLID);
-							if(solid) block2.setFlag(isVoid, Block.FACE_WEST);
-							if(!isVoid) block.setFlag(!solid, Block.FACE_EAST);
-
-							block2 = getBlock(i.x,i.y,i.z+1);
-							solid = block2!=null && block2.hasFlag(Block.SOLID);
-							if(solid) block2.setFlag(isVoid, Block.FACE_SOUTH);
-							if(!isVoid) block.setFlag(!solid, Block.FACE_NORTH);
-
-							block2 = getBlock(i.x,i.y,i.z-1);
-							solid = block2!=null && block2.hasFlag(Block.SOLID);
-							if(solid) block2.setFlag(isVoid, Block.FACE_NORTH);
-							if(!isVoid) block.setFlag(!solid, Block.FACE_SOUTH);
-
-							block2 = getBlock(i.x,i.y+1,i.z);
-							solid = block2!=null && block2.hasFlag(Block.SOLID);
-							if(solid) block2.setFlag(isVoid, Block.FACE_BOTTOM);
-							if(!isVoid) block.setFlag(!solid, Block.FACE_TOP);
-
-							block2 = getBlock(i.x,i.y-1,i.z);
-							solid = block2!=null && block2.hasFlag(Block.SOLID);
-							if(solid) block2.setFlag(isVoid, Block.FACE_TOP);
-							if(!isVoid) block.setFlag(!solid, Block.FACE_BOTTOM);
+			chunk = faceQueue.get(0);
+			p = chunk.getChunkPosition();
+			for (i.x = 0 + p.x; i.x < p.x + CHUNK_SIZE; i.x++)
+				for (i.z = 0 + p.z; i.z < p.z + CHUNK_SIZE; i.z++)
+					for (i.y = 0 + p.y; i.y < p.y + CHUNK_SIZE; i.y++) {
+						block = getBlock(i.x, i.y, i.z);
+						if (block != null) {
+							empty = (!block.hasFlag(Block.SOLID));
+							block2 = getBlock(i.x + 1, i.y, i.z);
+							setFlags(Block.FACE_EAST, Block.FACE_WEST);
+							block2 = getBlock(i.x - 1, i.y, i.z);
+							setFlags(Block.FACE_WEST, Block.FACE_EAST);
+							block2 = getBlock(i.x, i.y, i.z + 1);
+							setFlags(Block.FACE_SOUTH, Block.FACE_NORTH);
+							block2 = getBlock(i.x, i.y, i.z - 1);
+							setFlags(Block.FACE_NORTH, Block.FACE_SOUTH);
+							block2 = getBlock(i.x, i.y + 1, i.z);
+							setFlags(Block.FACE_BOTTOM, Block.FACE_TOP);
+							block2 = getBlock(i.x, i.y - 1, i.z);
+							setFlags(Block.FACE_TOP, Block.FACE_BOTTOM);
 						}
-			}
-			faceQueue.clear();
+					}
+			faceQueue.remove(0);
+		}
+	}
+
+	private static void setFlags(byte face1, byte face2) {
+		if(block2!=null) {
+			solid = block2.hasFlag(Block.SOLID);
+			if (solid) block2.setFlag(empty, face1);
+			if (!empty) block.setFlag(!solid, face2);
 		}
 	}
 

@@ -34,8 +34,11 @@ public class GameMain extends ApplicationAdapter {
 		if (log!=null && log.length()!=0)
 			System.out.println("Shader Log: "+log);
 	}
-	private static final short WORLD_SIZE = 20;
-	private static final float CAM = World.WORLD_HEIGHT*Chunk.CHUNK_SIZE + 1.5f;
+	private static final byte WORLD_SIZE = 20;
+	private static final float CAM = World.WORLD_HEIGHT*Chunk.CHUNK_SIZE + 8f;
+	protected byte getWorldSize() {
+		return WORLD_SIZE;
+	}
 
 	@Override
 	public void create () {
@@ -46,8 +49,8 @@ public class GameMain extends ApplicationAdapter {
 		}
 		camera = new PerspectiveCamera(75f,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		camera.position.set(-50f, CAM, -50f);
-		float halfWorld = WORLD_SIZE*8f+8f;
-		camera.lookAt(halfWorld,0f,halfWorld);
+		float halfWorld = getWorldSize()*8f+8f;
+		camera.lookAt(halfWorld, 0f, halfWorld);
 		camera.near = 1.0f;
 		camera.far = 5000f;
 
@@ -61,6 +64,7 @@ public class GameMain extends ApplicationAdapter {
 	private static final Int3 cC = new Int3();
 	private static final Int3 target = new Int3();
 	private static Chunk chunk;
+	private static byte frameCounter = 0;
 
 	@Override
 	public void render () {
@@ -103,28 +107,38 @@ public class GameMain extends ApplicationAdapter {
 
 		cC.set(camera.position);
 		cC.div(Chunk.CHUNK_SIZE);
-		for(r = 0; r<WORLD_SIZE; r++) {
-			for (i.newLoop((-r),r); i.doneLoop(); i.loop()) {
-				if(i.x>=-4 && i.z>=-4) { // TODO - Remove this to render behind you.
-					target.setPlus(i, cC);
-					if (target.y >= 0 && target.y < World.WORLD_HEIGHT &&
-							Math.abs(target.x) < 32768 &&
-							Math.abs(target.z) < 32768) {
-						if (i.x == r || i.x == -r || i.y == r || i.y == -r || i.z == r || i.z == -r) {
-							chunk = World.chunkMap.get(target.x, target.y, target.z);
-							if (chunk == null) {
-								chunk = new Chunk(target);
-								World.buildQueue.add(chunk);
-								chunk.addToMap();
-							} else if (chunk.hasMesh) {
-
-								chunk.mesh.render(shader, GL20.GL_TRIANGLES, 0, chunk.mesh.getNumVertices());
+		if(frameCounter==0) {
+			for (r = 0; r < getWorldSize(); r++) {
+				for (i.newLoop((-r), r); i.doneLoop(); i.loop()) {
+					if (i.x >= -2 && i.z >= -2) { // TODO - Remove this to render behind you.
+						target.setPlus(i, cC);
+						if (target.y >= 0 && target.y < World.WORLD_HEIGHT &&
+								Math.abs(target.x) < 32768 &&
+								Math.abs(target.z) < 32768) {
+							if (i.x == r || i.x == -r || i.y == r || i.y == -r || i.z == r || i.z == -r) {
+								chunk = World.chunkMap.get(target.x, target.y, target.z);
+								if (chunk == null) {
+									if (World.buildQueue.size()<World.FRAMES_PER_CYCLE) {
+										chunk = new Chunk(target);
+										World.buildQueue.add(chunk);
+										chunk.addToMap();
+									}
+								} else if (chunk.hasMesh) {
+									chunk.mesh.render(shader, GL20.GL_TRIANGLES, 0, chunk.mesh.getNumVertices());
+								}
 							}
 						}
 					}
 				}
 			}
+		} else {
+			for(Chunk chunk:World.chunkMap.values())
+				if(chunk.hasMesh)
+					chunk.mesh.render(shader, GL20.GL_TRIANGLES, 0, chunk.mesh.getNumVertices());
 		}
 		shader.end();
+		frameCounter++;
+		if(frameCounter>World.FRAMES_PER_CYCLE)
+			frameCounter=0;
 	}
 }
