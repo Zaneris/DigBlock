@@ -35,7 +35,7 @@ public class GameMain extends ApplicationAdapter {
 			System.out.println("Shader Log: "+log);
 	}
 	private static final short WORLD_SIZE = 20;
-	private static final float CAM = World.WORLD_HEIGHT*Chunk.CHUNK_SIZE;
+	private static final float CAM = World.WORLD_HEIGHT*Chunk.CHUNK_SIZE + 1.5f;
 
 	@Override
 	public void create () {
@@ -60,6 +60,7 @@ public class GameMain extends ApplicationAdapter {
 	private static final Int3 i = new Int3();
 	private static final Int3 cC = new Int3();
 	private static final Int3 target = new Int3();
+	private static Chunk chunk;
 
 	@Override
 	public void render () {
@@ -82,9 +83,9 @@ public class GameMain extends ApplicationAdapter {
 		} else
 			flush();
 	}
-	Chunk chunk;
+
 	void flush() {
-		//enable blending, for alpha
+		// Enable alpha blending
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
@@ -92,7 +93,7 @@ public class GameMain extends ApplicationAdapter {
 
 		camera.update();
 
-		//start the shader before setting any uniforms
+		// Shader must be started prior to setting any uniforms
 		shader.begin();
 		if(World.TEXTURES_ON) {
 			tex.bind();
@@ -103,22 +104,24 @@ public class GameMain extends ApplicationAdapter {
 		cC.set(camera.position);
 		cC.div(Chunk.CHUNK_SIZE);
 		for(r = 0; r<WORLD_SIZE; r++) {
-			for (i.newLoop(-r,r); i.doneLoop(); i.loop()) {
-				if(i.x>=0 && i.z>=0) { // TODO - Remove this to render behind you.
+			for (i.newLoop((-r),r); i.doneLoop(); i.loop()) {
+				if(i.x>=-4 && i.z>=-4) { // TODO - Remove this to render behind you.
 					target.setPlus(i, cC);
 					if (target.y >= 0 && target.y < World.WORLD_HEIGHT &&
 							Math.abs(target.x) < 32768 &&
-							Math.abs(target.z) < 32768)
-						if (Math.abs(i.x) == r || Math.abs(i.y) == r || Math.abs(i.z) == r) {
-							chunk = World.chunkMap.get(target);
+							Math.abs(target.z) < 32768) {
+						if (i.x == r || i.x == -r || i.y == r || i.y == -r || i.z == r || i.z == -r) {
+							chunk = World.chunkMap.get(target.x, target.y, target.z);
 							if (chunk == null) {
 								chunk = new Chunk(target);
 								World.buildQueue.add(chunk);
 								chunk.addToMap();
 							} else if (chunk.hasMesh) {
+
 								chunk.mesh.render(shader, GL20.GL_TRIANGLES, 0, chunk.mesh.getNumVertices());
 							}
 						}
+					}
 				}
 			}
 		}

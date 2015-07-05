@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector3;
 public class Int3 {
 	public int x, y, z;
 	private Int3 loopTarget;
+	private int loopStart;
 
 	public Int3() {}
 
@@ -98,24 +99,28 @@ public class Int3 {
 	}
 
 	// Allow for easier to read code for all the 3D loops
+	static int test = 0;
 	public void newLoop(int start, int target) {
 		set(start);
-		if(loopTarget==null)
-			loopTarget = new Int3(target, target, target+1);
-		else
-			loopTarget.set(target, target, target+1);
+		if(loopTarget==null) {
+			loopTarget = new Int3(target, target, target + 1);
+			loopStart = start;
+		} else {
+			loopTarget.set(target, target, target + 1);
+			loopStart = start;
+		}
 	}
 
 	// Circle through the 3D loop
 	public void loop() {
-		if(z<loopTarget.z-1)
+		if(z<(loopTarget.z-1)) {
 			z++;
-		else if(x<loopTarget.x) {
-			z = 0;
+		} else if(x<loopTarget.x) {
+			z = loopStart;
 			x++;
 		} else if(y<loopTarget.y) {
-			z = 0;
-			x = 0;
+			z = loopStart;
+			x = loopStart;
 			y++;
 		} else if(x==loopTarget.x)
 			z++;
