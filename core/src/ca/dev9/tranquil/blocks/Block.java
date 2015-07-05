@@ -17,6 +17,7 @@ public class Block {
 	public static final byte ALL_FACES	 = 0b0011_1111;
 
 	public byte blockType = 0;
+	public static final byte WATER  = -1;
 	public static final byte AIR    = 0;
 	public static final byte DIRT   = 1;
 	public static final byte GRASS  = 2;

@@ -3,6 +3,7 @@ package ca.dev9.tranquil;
 import ca.dev9.tranquil.blocks.Block;
 import ca.dev9.tranquil.blocks.Dirt;
 import ca.dev9.tranquil.blocks.Grass;
+import ca.dev9.tranquil.blocks.Water;
 import ca.dev9.tranquil.utils.Int3;
 import com.badlogic.gdx.graphics.Mesh;
 
@@ -47,6 +48,8 @@ public class Chunk {
 				return new Dirt(this);
 			case Block.GRASS:
 				return new Grass(this);
+			case Block.WATER:
+				return new Water(this);
 			default:
 				return new Block(this);
 		}

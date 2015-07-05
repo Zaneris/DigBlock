@@ -34,11 +34,8 @@ public class GameMain extends ApplicationAdapter {
 		if (log!=null && log.length()!=0)
 			System.out.println("Shader Log: "+log);
 	}
-	private static final byte WORLD_SIZE = 20;
+	protected static byte WORLD_SIZE = 20;
 	private static final float CAM = World.WORLD_HEIGHT*Chunk.CHUNK_SIZE + 8f;
-	protected byte getWorldSize() {
-		return WORLD_SIZE;
-	}
 
 	@Override
 	public void create () {
@@ -49,7 +46,7 @@ public class GameMain extends ApplicationAdapter {
 		}
 		camera = new PerspectiveCamera(75f,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		camera.position.set(-50f, CAM, -50f);
-		float halfWorld = getWorldSize()*8f+8f;
+		float halfWorld = WORLD_SIZE*8f+8f;
 		camera.lookAt(halfWorld, 0f, halfWorld);
 		camera.near = 1.0f;
 		camera.far = 5000f;
@@ -108,7 +105,7 @@ public class GameMain extends ApplicationAdapter {
 		cC.set(camera.position);
 		cC.div(Chunk.CHUNK_SIZE);
 		if(frameCounter==0) {
-			for (r = 0; r < getWorldSize(); r++) {
+			for (r = 0; r < WORLD_SIZE; r++) {
 				for (i.newLoop((-r), r); i.doneLoop(); i.loop()) {
 					if (i.x >= -2 && i.z >= -2) { // TODO - Remove this to render behind you.
 						target.setPlus(i, cC);

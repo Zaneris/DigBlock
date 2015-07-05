@@ -12,7 +12,8 @@ public class World {
 	public static final byte WORLD_HEIGHT = 2; // Height of world in chunks
 	public static final byte CHUNK_SIZE = 16;
 	public static final byte FRAMES_PER_CYCLE = 10;
-	public static final float TERRAIN_INTENSITY = 0.01f;
+	public static final float TERRAIN_INTENSITY = 0.005f;
+	public static final float TERRAIN_INTENSITY2 = 0.015f;
 	public static final short DRAW_DISTANCE = 100;
 	public static final boolean TEXTURES_ON = false;
 	public static final ChunkMap<Integer,Chunk> chunkMap = new ChunkMap<Integer,Chunk>();
@@ -37,12 +38,15 @@ public class World {
 				for (i.z = 0; i.z < Chunk.CHUNK_SIZE; i.z++) {
 					j = terrainHeight(i.x + p.x, i.z + p.z);
 					for (i.y = 0; i.y < Chunk.CHUNK_SIZE; i.y++) {
-						if (i.y + p.y < j)
+						if (i.y + p.y < j) {
 							chunk.createBlock(Block.DIRT, i);
-						else if (i.y + p.y == j)
+						} else if (i.y + p.y == j) {
 							chunk.createBlock(Block.GRASS, i);
-						else {
-							chunk.createBlock(Block.AIR, i);
+						} else {
+							if(i.y + p.y <= 12)
+								chunk.createBlock(Block.WATER, i);
+							else
+								chunk.createBlock(Block.AIR, i);
 						}
 					}
 				}
@@ -56,10 +60,14 @@ public class World {
 		noise = (1d + SimplexNoise.noise(
 				seed+(x*TERRAIN_INTENSITY),
 				seed+(z*TERRAIN_INTENSITY)))
-				* WORLD_HEIGHT*CHUNK_SIZE/2;
-		if(noise<1d)
+				*WORLD_HEIGHT*CHUNK_SIZE/4;
+		noise += (1d + SimplexNoise.noise(
+				seed+(x*TERRAIN_INTENSITY2),
+				seed+(z*TERRAIN_INTENSITY2)))
+				*WORLD_HEIGHT*CHUNK_SIZE/4;
+		if(noise <1d)
 			return 1;
-		if(noise>=WORLD_HEIGHT*CHUNK_SIZE)
+		if(noise >=WORLD_HEIGHT*CHUNK_SIZE)
 			return WORLD_HEIGHT*CHUNK_SIZE-1;
 		return (short)Math.floor(noise);
 	}
