@@ -27,25 +27,29 @@ public class Block {
 	public Block(Chunk chunk) {
 		this.chunk = chunk;
 	}
-
+	static int j = 0;
 	public void setFlag(byte flag) {
-		if(hasFlag(flag)) return;
-		if(blockType==AIR)
-			return;
-		visibleFaces = (byte)(visibleFaces|flag);
-			chunk.visibleFaces++;
-		chunk.addToMeshQueue();
+		if(!hasFlag(flag)) {
+			visibleFaces = (byte) (visibleFaces | flag);
+			if(flag!=SOLID) {
+				if (hasFlag(SOLID))
+					chunk.visSolidFaces++;
+				else
+					chunk.visTransFaces++;
+				chunk.addToMeshQueue();
+			}
+		}
 	}
 
 	public boolean hasFaces() {
 		return (visibleFaces&ALL_FACES)>0;
 	}
 
-	public void setFlag(boolean yes, byte flag) {
-		if(yes)
-			setFlag(flag);
-		else
+	public void setFlag(boolean value, byte flag) {
+		if(value)
 			removeFlag(flag);
+		else
+			setFlag(flag);
 	}
 
 	public byte copyFaces() {
@@ -55,11 +59,16 @@ public class Block {
 	}
 
 	public void removeFlag(byte flag) {
-		if(!hasFlag(flag))
-			return;
-		visibleFaces = (byte)(visibleFaces^flag);
-			chunk.visibleFaces--;
-		chunk.addToMeshQueue();
+		if(hasFlag(flag)) {
+			visibleFaces = (byte) (visibleFaces ^ flag);
+			if(flag!=SOLID) {
+				if (hasFlag(SOLID))
+					chunk.visSolidFaces--;
+				else
+					chunk.visTransFaces--;
+				chunk.addToMeshQueue();
+			}
+		}
 	}
 
 	public boolean hasFlag(byte flag) {

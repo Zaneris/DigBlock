@@ -81,10 +81,10 @@ public class World {
 		}
 	}
 
-	private static Block block;
+	private static Block block1;
 	private static Block block2;
-	private static boolean empty;
-	private static boolean solid;
+	private static boolean solid1;
+	private static boolean solid2;
 	public static void updateFaces() {
 		if(!faceQueue.isEmpty()) {
 			chunk = faceQueue.get(0);
@@ -92,21 +92,22 @@ public class World {
 			for (i.x = 0 + p.x; i.x < p.x + CHUNK_SIZE; i.x++)
 				for (i.z = 0 + p.z; i.z < p.z + CHUNK_SIZE; i.z++)
 					for (i.y = 0 + p.y; i.y < p.y + CHUNK_SIZE; i.y++) {
-						block = getBlock(i.x, i.y, i.z);
-						if (block != null) {
-							empty = (!block.hasFlag(Block.SOLID));
-							block2 = getBlock(i.x + 1, i.y, i.z);
-							setFlags(Block.FACE_EAST, Block.FACE_WEST);
-							block2 = getBlock(i.x - 1, i.y, i.z);
-							setFlags(Block.FACE_WEST, Block.FACE_EAST);
-							block2 = getBlock(i.x, i.y, i.z + 1);
-							setFlags(Block.FACE_SOUTH, Block.FACE_NORTH);
-							block2 = getBlock(i.x, i.y, i.z - 1);
-							setFlags(Block.FACE_NORTH, Block.FACE_SOUTH);
+						block1 = getBlock(i.x, i.y, i.z);
+						if (block1 != null) {
+							if(block1.blockType!=Block.WATER) {
+								block2 = getBlock(i.x + 1, i.y, i.z);
+								setFlags(Block.FACE_EAST, Block.FACE_WEST);
+								block2 = getBlock(i.x - 1, i.y, i.z);
+								setFlags(Block.FACE_WEST, Block.FACE_EAST);
+								block2 = getBlock(i.x, i.y, i.z + 1);
+								setFlags(Block.FACE_SOUTH, Block.FACE_NORTH);
+								block2 = getBlock(i.x, i.y, i.z - 1);
+								setFlags(Block.FACE_NORTH, Block.FACE_SOUTH);
+								block2 = getBlock(i.x, i.y - 1, i.z);
+								setFlags(Block.FACE_TOP, Block.FACE_BOTTOM);
+							}
 							block2 = getBlock(i.x, i.y + 1, i.z);
 							setFlags(Block.FACE_BOTTOM, Block.FACE_TOP);
-							block2 = getBlock(i.x, i.y - 1, i.z);
-							setFlags(Block.FACE_TOP, Block.FACE_BOTTOM);
 						}
 					}
 			faceQueue.remove(0);
@@ -115,9 +116,14 @@ public class World {
 
 	private static void setFlags(byte face1, byte face2) {
 		if(block2!=null) {
-			solid = block2.hasFlag(Block.SOLID);
-			if (solid) block2.setFlag(empty, face1);
-			if (!empty) block.setFlag(!solid, face2);
+			if(block1.blockType!=Block.WATER || block2.blockType!=Block.WATER) {
+				solid1 = block1.hasFlag(Block.SOLID) ||
+						(block1.blockType == Block.WATER &&
+								block2.blockType == Block.AIR);
+				solid2 = block2.hasFlag(Block.SOLID);
+				if (solid2) block2.setFlag(solid1, face1);
+				if (solid1) block1.setFlag(solid2, face2);
+			}
 		}
 	}
 

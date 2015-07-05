@@ -120,8 +120,8 @@ public class GameMain extends ApplicationAdapter {
 										World.buildQueue.add(chunk);
 										chunk.addToMap();
 									}
-								} else if (chunk.hasMesh) {
-									chunk.mesh.render(shader, GL20.GL_TRIANGLES, 0, chunk.mesh.getNumVertices());
+								} else if (chunk.hasMesh && chunk.solidMesh != null) {
+									chunk.solidMesh.render(shader, GL20.GL_TRIANGLES, 0, chunk.solidMesh.getNumVertices());
 								}
 							}
 						}
@@ -130,9 +130,13 @@ public class GameMain extends ApplicationAdapter {
 			}
 		} else {
 			for(Chunk chunk:World.chunkMap.values())
-				if(chunk.hasMesh)
-					chunk.mesh.render(shader, GL20.GL_TRIANGLES, 0, chunk.mesh.getNumVertices());
+				if(chunk.hasMesh && chunk.solidMesh!=null)
+					chunk.solidMesh.render(shader, GL20.GL_TRIANGLES, 0, chunk.solidMesh.getNumVertices());
 		}
+
+		for(Chunk chunk:World.chunkMap.values())
+			if(chunk.hasMesh && chunk.transMesh != null)
+				chunk.transMesh.render(shader, GL20.GL_TRIANGLES, 0, chunk.transMesh.getNumVertices());
 		shader.end();
 		frameCounter++;
 		if(frameCounter>World.FRAMES_PER_CYCLE)

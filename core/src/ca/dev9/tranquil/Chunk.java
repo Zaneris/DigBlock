@@ -16,10 +16,12 @@ public class Chunk {
 	public final Int3 id = new Int3();
 	private static final Int3 position = new Int3();
 	public Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
-	public int visibleFaces = 0;
-	public Mesh mesh;
+	public int visSolidFaces = 0;
+	public int visTransFaces = 0;
+	public Mesh solidMesh;
+	public Mesh transMesh;
 	public boolean hasMesh = false;
-	public boolean wait = false; // Awaiting new mesh
+	public boolean wait = false; // Awaiting new Mesh
 
 	public Chunk(Int3 int3) {
 		this(int3.x, int3.y, int3.z);
