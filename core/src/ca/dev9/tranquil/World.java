@@ -14,6 +14,7 @@ public class World {
 	public static final byte FRAMES_PER_CYCLE = 10;
 	public static final float TERRAIN_INTENSITY = 0.005f;
 	public static final float TERRAIN_INTENSITY2 = 0.015f;
+	public static final byte WATER_HEIGHT = 15;
 	public static final short DRAW_DISTANCE = 100;
 	public static final boolean TEXTURES_ON = false;
 	public static final ChunkMap<Integer,Chunk> chunkMap = new ChunkMap<Integer,Chunk>();
@@ -39,11 +40,12 @@ public class World {
 					j = terrainHeight(i.x + p.x, i.z + p.z);
 					for (i.y = 0; i.y < Chunk.CHUNK_SIZE; i.y++) {
 						if (i.y + p.y < j) {
+						// || (i.y + p.y == j && i.y + p.y < WATER_HEIGHT))
 							chunk.createBlock(Block.DIRT, i);
 						} else if (i.y + p.y == j) {
 							chunk.createBlock(Block.GRASS, i);
 						} else {
-							if(i.y + p.y <= 12)
+							if(i.y + p.y <= WATER_HEIGHT)
 								chunk.createBlock(Block.WATER, i);
 							else
 								chunk.createBlock(Block.AIR, i);
@@ -94,18 +96,16 @@ public class World {
 					for (i.y = 0 + p.y; i.y < p.y + CHUNK_SIZE; i.y++) {
 						block1 = getBlock(i.x, i.y, i.z);
 						if (block1 != null) {
-							if(block1.blockType!=Block.WATER) {
-								block2 = getBlock(i.x + 1, i.y, i.z);
-								setFlags(Block.FACE_EAST, Block.FACE_WEST);
-								block2 = getBlock(i.x - 1, i.y, i.z);
-								setFlags(Block.FACE_WEST, Block.FACE_EAST);
-								block2 = getBlock(i.x, i.y, i.z + 1);
-								setFlags(Block.FACE_SOUTH, Block.FACE_NORTH);
-								block2 = getBlock(i.x, i.y, i.z - 1);
-								setFlags(Block.FACE_NORTH, Block.FACE_SOUTH);
-								block2 = getBlock(i.x, i.y - 1, i.z);
-								setFlags(Block.FACE_TOP, Block.FACE_BOTTOM);
-							}
+							block2 = getBlock(i.x + 1, i.y, i.z);
+							setFlags(Block.FACE_EAST, Block.FACE_WEST);
+							block2 = getBlock(i.x - 1, i.y, i.z);
+							setFlags(Block.FACE_WEST, Block.FACE_EAST);
+							block2 = getBlock(i.x, i.y, i.z + 1);
+							setFlags(Block.FACE_SOUTH, Block.FACE_NORTH);
+							block2 = getBlock(i.x, i.y, i.z - 1);
+							setFlags(Block.FACE_NORTH, Block.FACE_SOUTH);
+							block2 = getBlock(i.x, i.y - 1, i.z);
+							setFlags(Block.FACE_TOP, Block.FACE_BOTTOM);
 							block2 = getBlock(i.x, i.y + 1, i.z);
 							setFlags(Block.FACE_BOTTOM, Block.FACE_TOP);
 						}
@@ -120,7 +120,9 @@ public class World {
 				solid1 = block1.hasFlag(Block.SOLID) ||
 						(block1.blockType == Block.WATER &&
 								block2.blockType == Block.AIR);
-				solid2 = block2.hasFlag(Block.SOLID);
+				solid2 = block2.hasFlag(Block.SOLID) ||
+						(block1.blockType == Block.AIR &&
+								block2.blockType == Block.WATER);
 				if (solid2) block2.setFlag(solid1, face1);
 				if (solid1) block1.setFlag(solid2, face2);
 			}

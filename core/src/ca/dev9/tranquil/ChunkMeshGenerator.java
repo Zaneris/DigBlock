@@ -59,7 +59,7 @@ public final class ChunkMeshGenerator {
 			if ((block.hasFaces() && block.hasFlag(Block.SOLID) && solid) ||
 					(block.hasFaces() && !solid && !block.hasFlag(Block.SOLID))) {
 				target.copyPlus(i, p);
-				addFaces(block.getSideColor(), block.getTopColor(), block.copyFaces());
+				addFaces(block.getSideColor(), block.getTopColor(), block.copyFaces(), solid);
 			}
 		}
 		temp.setVertices(verts, 0, j);
@@ -77,7 +77,7 @@ public final class ChunkMeshGenerator {
 	private static int idx = 0;
 
 	private static float x,y,z,c;
-	private static void addFaces(float sideColor, float topColor, byte faces) {
+	private static void addFaces(float sideColor, float topColor, byte faces, boolean solid) {
 		do {
 			x = target.x;
 			y = target.y;
@@ -108,7 +108,7 @@ public final class ChunkMeshGenerator {
 				c = sideColor;
 				faces = removeFlag(faces, Block.FACE_WEST);
 			} else if(hasFlag(faces, Block.FACE_TOP)) {
-				y += 1f;
+				y += (solid ? 1f : 0.8f);
 				d = top;
 				c = topColor;
 				faces = removeFlag(faces, Block.FACE_TOP);
