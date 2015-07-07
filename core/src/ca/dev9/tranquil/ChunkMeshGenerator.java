@@ -39,7 +39,7 @@ public final class ChunkMeshGenerator {
 		chunk.hasMesh = true;
 	}
 
-	public static void buildMesh(Chunk chunk, int faces, boolean solid) {
+	private static void buildMesh(Chunk chunk, int faces, boolean solid) {
 		numFloats = faces*TRIS_PER_FACE*VERTS_PER_TRI*NUM_COMPONENTS;
 
 		j = 0; // Reset number of floats/vertices

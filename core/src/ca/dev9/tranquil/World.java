@@ -17,7 +17,7 @@ public class World {
 	public static final float 	TERRAIN_INTENSITY2 = 0.015f;
 	public static final byte 	WATER_HEIGHT = 15;
 	public static final boolean TEXTURES_ON = false;
-	public static final boolean WIREFRAME = false;
+	public static boolean 		WIREFRAME = false;
 	public static final ChunkMap <Chunk> chunkMap 	= new <Chunk>ChunkMap<Chunk>();
 	public static final ArrayList<Chunk> buildQueue = new <Chunk>ArrayList<Chunk>();
 	public static final ArrayList<Chunk> faceQueue 	= new <Chunk>ArrayList<Chunk>();

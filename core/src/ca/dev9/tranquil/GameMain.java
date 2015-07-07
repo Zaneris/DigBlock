@@ -55,7 +55,7 @@ public class GameMain extends ApplicationAdapter {
 		camera.lookAt(halfWorld, 0f, halfWorld);
 		camera.near = 1.0f;
 		camera.far = 5000f;
-
+		curWireframe = World.WIREFRAME;
 		World.createNewWorld(camera);
 	}
 
@@ -70,6 +70,7 @@ public class GameMain extends ApplicationAdapter {
 	private final ArrayList<Chunk> garbage = new <Chunk>ArrayList<Chunk>();
 	private byte frameCounter = 0;
 	public static float dT;
+	private boolean curWireframe;
 
 	@Override
 	public void render () {
@@ -96,6 +97,12 @@ public class GameMain extends ApplicationAdapter {
 	}
 
 	void flush() {
+		if(curWireframe!=World.WIREFRAME) {
+			for(Chunk chunk:World.chunkMap.values())
+				if(chunk.hasMesh)
+					ChunkMeshGenerator.createMesh(chunk);
+			curWireframe=World.WIREFRAME;
+		}
 		if(!World.WIREFRAME) {
 			Gdx.gl.glEnable(GL20.GL_CULL_FACE);
 			Gdx.gl.glCullFace(GL20.GL_BACK);
@@ -112,13 +119,13 @@ public class GameMain extends ApplicationAdapter {
 		shader.setUniformMatrix("u_projTrans", camera.combined);
 		cC.set(camera.position);
 		cC.div(Chunk.CHUNK_SIZE);
-		if(frameCounter==0) {
+		if(frameCounter==0 && !curWireframe) {
 			toRender.clear();
 			toRender.putAll(World.chunkMap);
 			World.chunkMap.clear();
 			for (r = 0; r < WORLD_SIZE; r++) {
 				for (i.newLoop((-r), r); i.doneLoop(); i.loop()) {
-					if (i.x >= -1 || i.z>=-1) { // TODO - Remove this to render behind you.
+					if (i.x >= -3 && i.z>=-3) { // TODO - Remove this to render behind you.
 						target.setPlus(i, cC);
 						if (target.y >= 0 && target.y < World.WORLD_VCHUNK &&
 								Math.abs(target.x) < 32768 &&
