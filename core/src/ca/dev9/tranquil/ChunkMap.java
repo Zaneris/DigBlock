@@ -1,13 +1,14 @@
 package ca.dev9.tranquil;
 
 import ca.dev9.tranquil.utils.Int3;
+import com.badlogic.gdx.utils.IntMap;
 
 import java.util.HashMap;
 
 /**
  * Created by Zaneris on 03/07/2015.
  */
-public class ChunkMap<K,V> extends HashMap<K,V> {
+public class ChunkMap<V> extends IntMap<V> {
 	public boolean contains(int x, int y, int z) {
 		return containsKey(Chunk.generateHash(x,y,z));
 	}

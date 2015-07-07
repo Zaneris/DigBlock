@@ -24,12 +24,10 @@ public class ChunkMesh {
 	private int vertices;
 
 	public void setData(float[] floats, int size) {
-		if(vertexData==null)
-			vertexData = new VertexBufferObject(false, MAX_FLOATS, attribs);
-		if(vertexData.getNumVertices()<size)
-			vertexData.setVertices(floats,0,size);
-		else
-			vertexData.updateVertices(0,floats,0,size);
+		if(vertexData!=null)
+			vertexData.dispose();
+		vertexData = new VertexBufferObject(true, size, attribs);
+		vertexData.setVertices(floats,0,size);
 		vertices = size/ChunkMeshGenerator.NUM_COMPONENTS;
 	}
 

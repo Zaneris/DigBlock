@@ -7,6 +7,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.IntMap;
 
 import java.util.ArrayList;
 
@@ -66,7 +67,8 @@ public class GameMain extends ApplicationAdapter {
 	private final Int3 cC = new Int3();
 	private final Int3 target = new Int3();
 	private Chunk chunk;
-	private final ChunkMap<Integer,Chunk> toRender = new ChunkMap<Integer,Chunk>();
+	//private final ChunkMap<Integer,Chunk> toRender = new ChunkMap<Integer,Chunk>();
+	private final ChunkMap<Chunk> toRender = new ChunkMap<Chunk>();
 	private final ArrayList<Chunk> garbage = new ArrayList<Chunk>();
 	private byte frameCounter = 0;
 	public static float dT;

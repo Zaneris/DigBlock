@@ -18,7 +18,8 @@ public class World {
 	public static final byte WATER_HEIGHT = 15;
 	public static final short DRAW_DISTANCE = 100;
 	public static final boolean TEXTURES_ON = false;
-	public static final ChunkMap<Integer,Chunk> chunkMap = new ChunkMap<Integer,Chunk>();
+	public static final ChunkMap<Chunk> chunkMap = new ChunkMap<Chunk>();
+	//public static final ChunkMap<Integer,Chunk> chunkMap = new ChunkMap<Integer,Chunk>();
 	public static final ArrayList<Chunk> buildQueue = new ArrayList<Chunk>();
 	public static final ArrayList<Chunk> faceQueue = new ArrayList<Chunk>();
 	public static final ArrayList<Chunk> meshQueue = new ArrayList<Chunk>();

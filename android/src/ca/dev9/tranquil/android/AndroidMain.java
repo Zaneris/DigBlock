@@ -11,8 +11,8 @@ import com.badlogic.gdx.InputProcessor;
 public class AndroidMain extends GameMain implements InputProcessor {
 	@Override
 	public void create() {
-		WORLD_SIZE=8;
-		framesPerCycle=10;
+		WORLD_SIZE=12;
+		//framesPerCycle=10;
 		Gdx.input.setInputProcessor(this);
 		mobile = true;
 		super.create();
