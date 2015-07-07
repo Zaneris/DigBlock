@@ -9,9 +9,9 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
 public class GameMain extends ApplicationAdapter {
-	private static PerspectiveCamera camera;
-	private static ShaderProgram shader;
-	private static AssetManager assets;
+	private PerspectiveCamera camera;
+	private AssetManager assets;
+	public static ShaderProgram shader;
 
 	private static String getShader(String path) {
 		return Gdx.files.internal(path).readString();
@@ -34,6 +34,7 @@ public class GameMain extends ApplicationAdapter {
 		if (log!=null && log.length()!=0)
 			System.out.println("Shader Log: "+log);
 	}
+
 	protected static byte WORLD_SIZE = 20;
 	private static final float CAM = World.WORLD_HEIGHT*Chunk.CHUNK_SIZE + 8f;
 
@@ -54,14 +55,14 @@ public class GameMain extends ApplicationAdapter {
 		World.createNewWorld();
 	}
 
-	private static Texture tex;
-	private static boolean isLoaded = false;
-	private static int r;
+	private Texture tex;
+	private boolean isLoaded = false;
+	private int r;
 	private static final Int3 i = new Int3();
 	private static final Int3 cC = new Int3();
 	private static final Int3 target = new Int3();
-	private static Chunk chunk;
-	private static byte frameCounter = 0;
+	private Chunk chunk;
+	private byte frameCounter = 0;
 
 	@Override
 	public void render () {
@@ -121,7 +122,7 @@ public class GameMain extends ApplicationAdapter {
 										chunk.addToMap();
 									}
 								} else if (chunk.hasMesh && chunk.solidMesh != null) {
-									chunk.solidMesh.render(shader, GL20.GL_TRIANGLES, 0, chunk.solidMesh.getNumVertices());
+									chunk.solidMesh.render();
 								}
 							}
 						}
@@ -131,12 +132,12 @@ public class GameMain extends ApplicationAdapter {
 		} else {
 			for(Chunk chunk:World.chunkMap.values())
 				if(chunk.hasMesh && chunk.solidMesh!=null)
-					chunk.solidMesh.render(shader, GL20.GL_TRIANGLES, 0, chunk.solidMesh.getNumVertices());
+					chunk.solidMesh.render();
 		}
 
 		for(Chunk chunk:World.chunkMap.values())
 			if(chunk.hasMesh && chunk.transMesh != null)
-				chunk.transMesh.render(shader, GL20.GL_TRIANGLES, 0, chunk.transMesh.getNumVertices());
+				chunk.transMesh.render();
 		shader.end();
 		frameCounter++;
 		if(frameCounter>World.FRAMES_PER_CYCLE)

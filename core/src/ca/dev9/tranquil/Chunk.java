@@ -5,7 +5,6 @@ import ca.dev9.tranquil.blocks.Dirt;
 import ca.dev9.tranquil.blocks.Grass;
 import ca.dev9.tranquil.blocks.Water;
 import ca.dev9.tranquil.utils.Int3;
-import com.badlogic.gdx.graphics.Mesh;
 
 /**
  * Created by Zaneris on 29/06/2015.
@@ -14,12 +13,12 @@ public class Chunk {
 	public static final byte CHUNK_SIZE = World.CHUNK_SIZE; // 32 max
 	private static final Int3 chunkCenter = new Int3();
 	public final Int3 id = new Int3();
-	private static final Int3 position = new Int3();
+	public final Int3 position = new Int3();
 	public Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 	public int visSolidFaces = 0;
 	public int visTransFaces = 0;
-	public Mesh solidMesh;
-	public Mesh transMesh;
+	public ChunkMesh solidMesh;
+	public ChunkMesh transMesh;
 	public boolean hasMesh = false;
 	public boolean wait = false; // Awaiting new Mesh
 
@@ -62,7 +61,7 @@ public class Chunk {
 		if(this == obj) return true;
 		if(obj == null || this.getClass() != obj.getClass())
 			return false;
-		return id.equals(((Chunk)obj).id);
+		return id.equals(((Chunk) obj).id);
 	}
 
 	@Override
@@ -87,12 +86,6 @@ public class Chunk {
 		chunkCenter.mult(CHUNK_SIZE);
 		chunkCenter.add(8);
 		return chunkCenter;
-	}
-
-	public Int3 getChunkPosition() {
-		position.copyFrom(id);
-		position.mult(CHUNK_SIZE);
-		return position;
 	}
 
 	public Block getBlock(Int3 int3) {

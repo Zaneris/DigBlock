@@ -1,6 +1,7 @@
 package ca.dev9.tranquil.blocks;
 
 import ca.dev9.tranquil.Chunk;
+import com.badlogic.gdx.graphics.Color;
 
 /**
  * Created by Zaneris on 29/06/2015.
@@ -22,12 +23,16 @@ public class Block {
 	public static final byte DIRT   = 1;
 	public static final byte GRASS  = 2;
 
+	private static final float water = Color.valueOf("3094CF88").toFloatBits();
+	private static final float dirt = Color.valueOf("573B0CFF").toFloatBits();
+	private static final float grass = Color.valueOf("007B0CFF").toFloatBits();
+
 	public Chunk chunk;
 
 	public Block(Chunk chunk) {
 		this.chunk = chunk;
 	}
-	static int j = 0;
+
 	public void setFlag(byte flag) {
 		if(!hasFlag(flag)) {
 			visibleFaces = (byte) (visibleFaces | flag);
@@ -81,5 +86,18 @@ public class Block {
 
 	public float getSideColor() {
 		return 0f;
+	}
+
+	public static float getColorFromBlockType(byte block, boolean top) {
+		switch(block) {
+			case WATER:
+				return water;
+			case DIRT:
+				return dirt;
+			case GRASS:
+				if(top) return grass;
+				else return dirt;
+		}
+		return 0;
 	}
 }

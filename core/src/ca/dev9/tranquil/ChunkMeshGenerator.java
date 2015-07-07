@@ -2,9 +2,6 @@ package ca.dev9.tranquil;
 
 import ca.dev9.tranquil.blocks.Block;
 import ca.dev9.tranquil.utils.Int3;
-import com.badlogic.gdx.graphics.Mesh;
-import com.badlogic.gdx.graphics.VertexAttribute;
-import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -20,28 +17,21 @@ public final class ChunkMeshGenerator {
 	private static final byte VERTS_PER_TRI = 3;
 	private static final byte TRIS_PER_FACE = 2;
 	private static final byte FACES_PER_CUBE = 6;
-	private static final int MAX_VERTS = VERTS_PER_TRI * TRIS_PER_FACE * FACES_PER_CUBE
+	private static final int MAX_FLOATS = VERTS_PER_TRI * TRIS_PER_FACE * FACES_PER_CUBE
 			* Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * NUM_COMPONENTS;
 
-	private static final VertexAttribute a_position =
-			new VertexAttribute(VertexAttributes.Usage.Position, POSITION_COMPONENTS, "a_position");
-	private static final VertexAttribute a_color =
-			new VertexAttribute(VertexAttributes.Usage.ColorPacked, 4, "a_color");
-	private static final VertexAttribute a_texCoords =
-			new VertexAttribute(VertexAttributes.Usage.TextureCoordinates, TEXTURE_COORDS, "a_texCoords");
-
-	private static final float[] verts = new float[MAX_VERTS];
+	private static final float[] verts = new float[MAX_FLOATS];
 	private static int numFloats;
 	private static Block block;
 	private static int j;
-	private static final Int3 p = new Int3();
+	private static Int3 p;
 	private static final Int3 i = new Int3();
 	private static final Int3 target = new Int3();
 
 	public static void createMesh(Chunk chunk) {
-		if (chunk.solidMesh != null) chunk.solidMesh.dispose();
-		if (chunk.transMesh != null) chunk.transMesh.dispose();
-		p.copyFrom(chunk.getChunkPosition());
+		if(chunk.solidMesh!=null) chunk.solidMesh.dispose();
+		if(chunk.transMesh!=null) chunk.transMesh.dispose();
+		p = chunk.position;
 		if(chunk.visSolidFaces>0)
 			chunk.solidMesh = buildMesh(chunk, chunk.visSolidFaces, true);
 		if(chunk.visTransFaces>0)
@@ -49,9 +39,10 @@ public final class ChunkMeshGenerator {
 		chunk.hasMesh = true;
 	}
 
-	public static Mesh buildMesh(Chunk chunk, int faces, boolean solid) {
-		numFloats = faces * TRIS_PER_FACE * VERTS_PER_TRI * NUM_COMPONENTS;
-		Mesh temp = new Mesh(true, numFloats, 0, a_position, (World.TEXTURES_ON ? a_texCoords : a_color));
+	private static ChunkMesh temp;
+	public static ChunkMesh buildMesh(Chunk chunk, int faces, boolean solid) {
+		numFloats = faces*TRIS_PER_FACE*VERTS_PER_TRI*NUM_COMPONENTS;
+		temp = new ChunkMesh(numFloats);
 
 		j = 0; // Reset number of floats/vertices
 		for (i.newLoop(0, CHUNK_SIZE - 1); i.doneLoop(); i.loop()) {
@@ -62,7 +53,7 @@ public final class ChunkMeshGenerator {
 				addFaces(block.getSideColor(), block.getTopColor(), block.copyFaces(), solid);
 			}
 		}
-		temp.setVertices(verts, 0, j);
+		temp.setData(verts, j);
 		return temp;
 	}
 

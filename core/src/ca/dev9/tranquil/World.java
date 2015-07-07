@@ -34,7 +34,7 @@ public class World {
 	public static void buildChunks() {
 		if(!buildQueue.isEmpty()) {
 			chunk = buildQueue.get(0);
-			p = chunk.getChunkPosition();
+			p = chunk.position;
 			for (i.x = 0; i.x < Chunk.CHUNK_SIZE; i.x++)
 				for (i.z = 0; i.z < Chunk.CHUNK_SIZE; i.z++) {
 					j = terrainHeight(i.x + p.x, i.z + p.z);
@@ -90,7 +90,7 @@ public class World {
 	public static void updateFaces() {
 		if(!faceQueue.isEmpty()) {
 			chunk = faceQueue.get(0);
-			p = chunk.getChunkPosition();
+			p = chunk.position;
 			for (i.x = 0 + p.x; i.x < p.x + CHUNK_SIZE; i.x++)
 				for (i.z = 0 + p.z; i.z < p.z + CHUNK_SIZE; i.z++)
 					for (i.y = 0 + p.y; i.y < p.y + CHUNK_SIZE; i.y++) {
