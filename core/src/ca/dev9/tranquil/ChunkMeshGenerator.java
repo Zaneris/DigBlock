@@ -12,7 +12,7 @@ public final class ChunkMeshGenerator {
 	private static final byte POSITION_COMPONENTS = 3;
 	private static final byte COLOR_COMPONENTS = 1;
 	private static final byte TEXTURE_COORDS = 2;
-	public final static byte NUM_COMPONENTS = (byte)POSITION_COMPONENTS
+	public final static byte NUM_COMPONENTS = POSITION_COMPONENTS
 			+ (World.TEXTURES_ON ? TEXTURE_COORDS : COLOR_COMPONENTS);
 	private static final byte VERTS_PER_TRI = 3;
 	private static final byte TRIS_PER_FACE = 2;
@@ -110,53 +110,89 @@ public final class ChunkMeshGenerator {
 				faces = removeFlag(faces, Block.FACE_TOP);
 			} else break; // <-- Should never actually occur.
 
-			for (idx = 0; idx < 6; idx++) {
-				switch (idx) {
-					case 0:
-					case 3:
-						verts[j++] = x;
-						verts[j++] = y;
-						verts[j++] = z;
-						if (World.TEXTURES_ON) {
-							verts[j++] = 1f;
-							verts[j++] = 0f;
-						} else
-							verts[j++] = c;
-						break;
-					case 1:
-						verts[j++] = x;
-						verts[j++] = y + d.y;
-						verts[j++] = d==top || d==bottom ? z + d.z : z;
-						if (World.TEXTURES_ON) {
-							verts[j++] = 1f;
-							verts[j++] = 1f;
-						} else
-							verts[j++] = c;
-						break;
-					case 2:
-					case 4:
-						verts[j++] = x + d.x;
-						verts[j++] = y + d.y;
-						verts[j++] = z + d.z;
-						if (World.TEXTURES_ON) {
-							verts[j++] = 0f;
-							verts[j++] = 1f;
-						} else
-							verts[j++] = c;
-						break;
-					case 5:
-						verts[j++] = x + d.x;
-						verts[j++] = y;
-						verts[j++] = d==top || d==bottom ? z : z + d.z;
-						if (World.TEXTURES_ON) {
-							verts[j++] = 0f;
-							verts[j++] = 0f;
-						} else
-							verts[j++] = c;
-						break;
+			if(World.WIREFRAME) {
+				for(idx = 0; idx < 8; idx++) {
+					switch (idx) {
+						case 0:
+						case 7:
+							addBottomRight();
+							break;
+						case 1:
+						case 2:
+							addTopRight();
+							break;
+						case 3:
+						case 4:
+							addTopLeft();
+							break;
+						case 5:
+						case 6:
+							addBottomLeft();
+					}
+					verts[j++] = c;
+				}
+			} else {
+				for (idx = 0; idx < 6; idx++) {
+					switch (idx) {
+						case 0:
+						case 3:
+							addBottomRight();
+							break;
+						case 1:
+							addTopRight();
+							break;
+						case 2:
+						case 4:
+							addTopLeft();
+							break;
+						case 5:
+							addBottomLeft();
+					}
+					if (!World.TEXTURES_ON)
+						verts[j++] = c;
 				}
 			}
 		} while (faces>0);
+	}
+
+	private static void addBottomRight() {
+		verts[j++] = x;
+		verts[j++] = y;
+		verts[j++] = z;
+		if (World.TEXTURES_ON) {
+			verts[j++] = 1f;
+			verts[j++] = 0f;
+		}
+	}
+
+	private static void addTopRight() {
+		verts[j++] = x;
+		verts[j++] = y + d.y;
+		verts[j++] = d==top || d==bottom ? z + d.z : z;
+		if (World.TEXTURES_ON) {
+			verts[j++] = 1f;
+			verts[j++] = 1f;
+		}
+	}
+
+	private static void addTopLeft() {
+		verts[j++] = x + d.x;
+		verts[j++] = y + d.y;
+		verts[j++] = z + d.z;
+		if (World.TEXTURES_ON) {
+			verts[j++] = 0f;
+			verts[j++] = 1f;
+		}
+	}
+
+	private static void addBottomLeft() {
+		verts[j++] = x + d.x;
+		verts[j++] = y;
+		verts[j++] = d==top || d==bottom ? z : z + d.z;
+		if (World.TEXTURES_ON) {
+			verts[j++] = 0f;
+			verts[j++] = 0f;
+		}
 	}
 
 	private static byte removeFlag(byte faces, byte flag) {

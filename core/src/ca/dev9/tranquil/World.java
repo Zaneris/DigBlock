@@ -2,7 +2,6 @@ package ca.dev9.tranquil;
 
 import ca.dev9.tranquil.blocks.Block;
 import ca.dev9.tranquil.utils.Int3;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 
 import java.util.ArrayList;
@@ -11,18 +10,18 @@ import java.util.ArrayList;
  * Created by Zaneris on 02/07/2015.
  */
 public class World {
-	public static final byte WORLD_HEIGHT = 2; // Height of world in chunks
-	public static final byte CHUNK_SIZE = 16;
-	public static final float TERRAIN_INTENSITY = 0.005f;
-	public static final float TERRAIN_INTENSITY2 = 0.015f;
-	public static final byte WATER_HEIGHT = 15;
-	public static final short DRAW_DISTANCE = 100;
+	public static final byte 	WORLD_VCHUNK = 2; // Height of world in chunks
+	public static final byte 	CHUNK_SIZE = 16;
+	public static final byte 	WORLD_VBLOCK = WORLD_VCHUNK*CHUNK_SIZE-1;
+	public static final float 	TERRAIN_INTENSITY = 0.005f;
+	public static final float 	TERRAIN_INTENSITY2 = 0.015f;
+	public static final byte 	WATER_HEIGHT = 15;
 	public static final boolean TEXTURES_ON = false;
-	public static final ChunkMap<Chunk> chunkMap = new ChunkMap<Chunk>();
-	//public static final ChunkMap<Integer,Chunk> chunkMap = new ChunkMap<Integer,Chunk>();
-	public static final ArrayList<Chunk> buildQueue = new ArrayList<Chunk>();
-	public static final ArrayList<Chunk> faceQueue = new ArrayList<Chunk>();
-	public static final ArrayList<Chunk> meshQueue = new ArrayList<Chunk>();
+	public static final boolean WIREFRAME = false;
+	public static final ChunkMap <Chunk> chunkMap 	= new <Chunk>ChunkMap<Chunk>();
+	public static final ArrayList<Chunk> buildQueue = new <Chunk>ArrayList<Chunk>();
+	public static final ArrayList<Chunk> faceQueue 	= new <Chunk>ArrayList<Chunk>();
+	public static final ArrayList<Chunk> meshQueue 	= new <Chunk>ArrayList<Chunk>();
 	public static Player player;
 	public static double seed;
 
@@ -64,15 +63,15 @@ public class World {
 		noise = (1d + SimplexNoise.noise(
 				seed+(x*TERRAIN_INTENSITY),
 				seed+(z*TERRAIN_INTENSITY)))
-				*WORLD_HEIGHT*CHUNK_SIZE/4;
+				* WORLD_VCHUNK *CHUNK_SIZE/4;
 		noise += (1d + SimplexNoise.noise(
 				seed+(x*TERRAIN_INTENSITY2),
 				seed+(z*TERRAIN_INTENSITY2)))
-				*WORLD_HEIGHT*CHUNK_SIZE/4;
+				* WORLD_VCHUNK *CHUNK_SIZE/4;
 		if(noise <1d)
 			return 1;
-		if(noise >=WORLD_HEIGHT*CHUNK_SIZE)
-			return WORLD_HEIGHT*CHUNK_SIZE-1;
+		if(noise >= WORLD_VBLOCK)
+			return WORLD_VBLOCK;
 		return (short)Math.floor(noise);
 	}
 
@@ -144,9 +143,11 @@ public class World {
 		temp.set(x, y, z);
 		return getBlock(temp);
 	}
+
 	private static Chunk tB;
 	private static final Int3 inner = new Int3();
 	public static Block getBlock(Int3 int3) {
+		if(int3.y>WORLD_VBLOCK) return null;
 		inner.copyFrom(int3);
 		inner.mod(CHUNK_SIZE);
 		int3.div(CHUNK_SIZE);

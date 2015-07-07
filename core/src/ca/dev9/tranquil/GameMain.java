@@ -7,7 +7,6 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
-import com.badlogic.gdx.utils.IntMap;
 
 import java.util.ArrayList;
 
@@ -41,7 +40,7 @@ public class GameMain extends ApplicationAdapter {
 	}
 
 	protected static byte WORLD_SIZE = 16;
-	private static final float CAM = World.WORLD_HEIGHT*Chunk.CHUNK_SIZE + 1f;
+	private static final float CAM = World.WORLD_VCHUNK *Chunk.CHUNK_SIZE + 1f;
 
 	@Override
 	public void create () {
@@ -67,9 +66,8 @@ public class GameMain extends ApplicationAdapter {
 	private final Int3 cC = new Int3();
 	private final Int3 target = new Int3();
 	private Chunk chunk;
-	//private final ChunkMap<Integer,Chunk> toRender = new ChunkMap<Integer,Chunk>();
-	private final ChunkMap<Chunk> toRender = new ChunkMap<Chunk>();
-	private final ArrayList<Chunk> garbage = new ArrayList<Chunk>();
+	private final ChunkMap<Chunk> toRender = new <Chunk>ChunkMap<Chunk>();
+	private final ArrayList<Chunk> garbage = new <Chunk>ArrayList<Chunk>();
 	private byte frameCounter = 0;
 	public static float dT;
 
@@ -98,9 +96,10 @@ public class GameMain extends ApplicationAdapter {
 	}
 
 	void flush() {
-		// Enable alpha blending
-		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
-		Gdx.gl.glCullFace(GL20.GL_BACK);
+		if(!World.WIREFRAME) {
+			Gdx.gl.glEnable(GL20.GL_CULL_FACE);
+			Gdx.gl.glCullFace(GL20.GL_BACK);
+		}
 
 		camera.update();
 
@@ -121,7 +120,7 @@ public class GameMain extends ApplicationAdapter {
 				for (i.newLoop((-r), r); i.doneLoop(); i.loop()) {
 					if (i.x >= -1 || i.z>=-1) { // TODO - Remove this to render behind you.
 						target.setPlus(i, cC);
-						if (target.y >= 0 && target.y < World.WORLD_HEIGHT &&
+						if (target.y >= 0 && target.y < World.WORLD_VCHUNK &&
 								Math.abs(target.x) < 32768 &&
 								Math.abs(target.z) < 32768) {
 							if (i.x == r || i.x == -r || i.y == r || i.y == -r || i.z == r || i.z == -r) {

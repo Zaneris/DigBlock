@@ -1,6 +1,7 @@
 package ca.dev9.tranquil;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.glutils.VertexBufferObject;
@@ -33,7 +34,10 @@ public class ChunkMesh {
 
 	public void render() {
 		vertexData.bind(GameMain.shader);
-		Gdx.gl20.glDrawArrays(Gdx.gl.GL_TRIANGLES, 0, vertices);
+		if(World.WIREFRAME)
+			Gdx.gl20.glDrawArrays(GL20.GL_LINES, 0, vertices);
+		else
+			Gdx.gl20.glDrawArrays(GL20.GL_TRIANGLES, 0, vertices);
 		vertexData.unbind(GameMain.shader);
 	}
 
