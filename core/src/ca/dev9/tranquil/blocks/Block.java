@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.Color;
  * Created by Zaneris on 29/06/2015.
  */
 public class Block {
-	private byte visibleFaces = 0b0000_0000;
+	private byte visibleFaces;
 	public static final byte SOLID       = 0b0100_0000;
 	public static final byte FACE_TOP    = 0b0010_0000;
 	public static final byte FACE_BOTTOM = 0b0001_0000;
@@ -33,6 +33,11 @@ public class Block {
 		this.chunk = chunk;
 	}
 
+	public void reset() {
+		blockType = 0;
+		visibleFaces = 0;
+	}
+
 	public void setFlag(byte flag) {
 		if(!hasFlag(flag)) {
 			visibleFaces = (byte) (visibleFaces | flag);
@@ -44,6 +49,12 @@ public class Block {
 				chunk.addToMeshQueue();
 			}
 		}
+	}
+
+	public void setBlockType(byte type) {
+		blockType = type;
+		if(type!=AIR && type!=WATER)
+			setFlag(SOLID);
 	}
 
 	public boolean hasFaces() {
@@ -81,11 +92,11 @@ public class Block {
 	}
 
 	public float getTopColor() {
-		return getSideColor();
+		return getColorFromBlockType(blockType, true);
 	}
 
 	public float getSideColor() {
-		return 0f;
+		return getColorFromBlockType(blockType, false);
 	}
 
 	public static float getColorFromBlockType(byte block, boolean top) {

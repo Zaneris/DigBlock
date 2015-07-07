@@ -153,6 +153,11 @@ public class Int3 {
 	}
 
 	public int distance(Int3 int3) {
-		return (int)Math.round(Math.sqrt((x-int3.x)^2+(y-int3.y)^2+(z-int3.z)^2));
+		return (int)Math.round(Math.sqrt(((x-int3.x)*(x-int3.x))+((y-int3.y)*(y-int3.y))+((z-int3.z)*(z-int3.z))));
+	}
+
+	@Override
+	public String toString() {
+		return ("x:" + x + " y:" + y + " z:" + z);
 	}
 }

@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.glutils.VertexData;
  * Created by Zaneris on 06/07/2015.
  */
 public class ChunkMesh {
+	private static final int MAX_FLOATS = ChunkMeshGenerator.MAX_FLOATS;
 	private static final VertexAttribute a_position =
 			new VertexAttribute(VertexAttributes.Usage.Position, 3, "a_position");
 	private static final VertexAttribute a_color =
@@ -20,22 +21,25 @@ public class ChunkMesh {
 			new VertexAttributes(a_position, (World.TEXTURES_ON ? a_texCoords : a_color));
 
 	private VertexData vertexData;
-
-	public ChunkMesh(int floats) {
-		vertexData = new VertexBufferObject(true,floats,attribs);
-	}
+	private int vertices;
 
 	public void setData(float[] floats, int size) {
-		vertexData.setVertices(floats,0,size);
+		if(vertexData==null)
+			vertexData = new VertexBufferObject(false, MAX_FLOATS, attribs);
+		if(vertexData.getNumVertices()<size)
+			vertexData.setVertices(floats,0,size);
+		else
+			vertexData.updateVertices(0,floats,0,size);
+		vertices = size/ChunkMeshGenerator.NUM_COMPONENTS;
 	}
 
 	public void render() {
 		vertexData.bind(GameMain.shader);
-		Gdx.gl20.glDrawArrays(Gdx.gl.GL_TRIANGLES, 0, vertexData.getNumVertices());
+		Gdx.gl20.glDrawArrays(Gdx.gl.GL_TRIANGLES, 0, vertices);
 		vertexData.unbind(GameMain.shader);
 	}
 
-	public void dispose() {
-		vertexData.dispose();
+	public void reset() {
+		vertices = 0;
 	}
 }

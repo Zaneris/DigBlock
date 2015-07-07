@@ -12,15 +12,17 @@ public final class ChunkMeshGenerator {
 	private static final byte POSITION_COMPONENTS = 3;
 	private static final byte COLOR_COMPONENTS = 1;
 	private static final byte TEXTURE_COORDS = 2;
-	private final static byte NUM_COMPONENTS = POSITION_COMPONENTS
+	public final static byte NUM_COMPONENTS = (byte)POSITION_COMPONENTS
 			+ (World.TEXTURES_ON ? TEXTURE_COORDS : COLOR_COMPONENTS);
 	private static final byte VERTS_PER_TRI = 3;
 	private static final byte TRIS_PER_FACE = 2;
 	private static final byte FACES_PER_CUBE = 6;
-	private static final int MAX_FLOATS = VERTS_PER_TRI * TRIS_PER_FACE * FACES_PER_CUBE
-			* Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * NUM_COMPONENTS;
 
-	private static final float[] verts = new float[MAX_FLOATS];
+	// Max visible faces would be every other cube rendered.
+	public static final int MAX_FLOATS = VERTS_PER_TRI * TRIS_PER_FACE * FACES_PER_CUBE
+			* (CHUNK_SIZE/2) * (CHUNK_SIZE/2) * (CHUNK_SIZE/2) * NUM_COMPONENTS;
+
+	private static float[] verts = new float[MAX_FLOATS];
 	private static int numFloats;
 	private static Block block;
 	private static int j;
@@ -29,20 +31,16 @@ public final class ChunkMeshGenerator {
 	private static final Int3 target = new Int3();
 
 	public static void createMesh(Chunk chunk) {
-		if(chunk.solidMesh!=null) chunk.solidMesh.dispose();
-		if(chunk.transMesh!=null) chunk.transMesh.dispose();
 		p = chunk.position;
 		if(chunk.visSolidFaces>0)
-			chunk.solidMesh = buildMesh(chunk, chunk.visSolidFaces, true);
+			buildMesh(chunk, chunk.visSolidFaces, true);
 		if(chunk.visTransFaces>0)
-			chunk.transMesh = buildMesh(chunk, chunk.visTransFaces, false);
+			buildMesh(chunk, chunk.visTransFaces, false);
 		chunk.hasMesh = true;
 	}
 
-	private static ChunkMesh temp;
-	public static ChunkMesh buildMesh(Chunk chunk, int faces, boolean solid) {
+	public static void buildMesh(Chunk chunk, int faces, boolean solid) {
 		numFloats = faces*TRIS_PER_FACE*VERTS_PER_TRI*NUM_COMPONENTS;
-		temp = new ChunkMesh(numFloats);
 
 		j = 0; // Reset number of floats/vertices
 		for (i.newLoop(0, CHUNK_SIZE - 1); i.doneLoop(); i.loop()) {
@@ -53,8 +51,15 @@ public final class ChunkMeshGenerator {
 				addFaces(block.getSideColor(), block.getTopColor(), block.copyFaces(), solid);
 			}
 		}
-		temp.setData(verts, j);
-		return temp;
+		if(solid) {
+			if(chunk.solidMesh==null)
+				chunk.solidMesh=new ChunkMesh();
+			chunk.solidMesh.setData(verts,j);
+		} else {
+			if(chunk.transMesh==null)
+				chunk.transMesh=new ChunkMesh();
+			chunk.transMesh.setData(verts,j);
+		}
 	}
 
 	private static final Vector3 north 	= new Vector3(-1f,1f, 0f);

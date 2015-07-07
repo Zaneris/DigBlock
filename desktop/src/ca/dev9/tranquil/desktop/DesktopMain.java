@@ -1,6 +1,8 @@
 package ca.dev9.tranquil.desktop;
 
 import ca.dev9.tranquil.GameMain;
+import ca.dev9.tranquil.InputHandler;
+import ca.dev9.tranquil.World;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
@@ -17,13 +19,35 @@ public class DesktopMain extends GameMain implements InputProcessor {
 
 	@Override
 	public boolean keyDown(int keycode) {
-		if(keycode == Input.Keys.ESCAPE)
-			Gdx.app.exit();
-		return true;
+		switch(keycode) {
+			case Input.Keys.ESCAPE:
+				Gdx.app.exit();
+				break;
+			case Input.Keys.W:
+			case Input.Keys.UP:
+				InputHandler.setXAxis(1f);
+				break;
+			case Input.Keys.S:
+			case Input.Keys.DOWN:
+				InputHandler.setXAxis(-1f);
+				break;
+			case Input.Keys.SHIFT_LEFT:
+				InputHandler.setXAxis(10f);
+		}
+		return false;
 	}
 
 	@Override
 	public boolean keyUp(int keycode) {
+		switch(keycode) {
+			case Input.Keys.W:
+			case Input.Keys.UP:
+			case Input.Keys.S:
+			case Input.Keys.DOWN:
+			case Input.Keys.SHIFT_LEFT:
+				InputHandler.setXAxis(0f);
+				break;
+		}
 		return false;
 	}
 

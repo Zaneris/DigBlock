@@ -8,10 +8,14 @@ import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
+import java.util.ArrayList;
+
 public class GameMain extends ApplicationAdapter {
 	private PerspectiveCamera camera;
 	private AssetManager assets;
 	public static ShaderProgram shader;
+	public static boolean mobile = false;
+	public byte framesPerCycle = 10;
 
 	private static String getShader(String path) {
 		return Gdx.files.internal(path).readString();
@@ -35,8 +39,8 @@ public class GameMain extends ApplicationAdapter {
 			System.out.println("Shader Log: "+log);
 	}
 
-	protected static byte WORLD_SIZE = 20;
-	private static final float CAM = World.WORLD_HEIGHT*Chunk.CHUNK_SIZE + 8f;
+	protected static byte WORLD_SIZE = 16;
+	private static final float CAM = World.WORLD_HEIGHT*Chunk.CHUNK_SIZE + 1f;
 
 	@Override
 	public void create () {
@@ -52,20 +56,25 @@ public class GameMain extends ApplicationAdapter {
 		camera.near = 1.0f;
 		camera.far = 5000f;
 
-		World.createNewWorld();
+		World.createNewWorld(camera);
 	}
 
 	private Texture tex;
 	private boolean isLoaded = false;
 	private int r;
-	private static final Int3 i = new Int3();
-	private static final Int3 cC = new Int3();
-	private static final Int3 target = new Int3();
+	private final Int3 i = new Int3();
+	private final Int3 cC = new Int3();
+	private final Int3 target = new Int3();
 	private Chunk chunk;
+	private final ChunkMap<Integer,Chunk> toRender = new ChunkMap<Integer,Chunk>();
+	private final ArrayList<Chunk> garbage = new ArrayList<Chunk>();
 	private byte frameCounter = 0;
+	public static float dT;
 
 	@Override
 	public void render () {
+		dT = Gdx.graphics.getDeltaTime();
+		InputHandler.processInput();
 		World.buildChunks();
 		World.updateFaces();
 		World.createMeshes();
@@ -88,8 +97,6 @@ public class GameMain extends ApplicationAdapter {
 
 	void flush() {
 		// Enable alpha blending
-		Gdx.gl.glEnable(GL20.GL_BLEND);
-		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
 		Gdx.gl.glCullFace(GL20.GL_BACK);
 
@@ -102,32 +109,50 @@ public class GameMain extends ApplicationAdapter {
 			shader.setUniformi("u_diffuseTexture", 0);
 		}
 		shader.setUniformMatrix("u_projTrans", camera.combined);
-
 		cC.set(camera.position);
 		cC.div(Chunk.CHUNK_SIZE);
 		if(frameCounter==0) {
+			toRender.clear();
+			toRender.putAll(World.chunkMap);
+			World.chunkMap.clear();
 			for (r = 0; r < WORLD_SIZE; r++) {
 				for (i.newLoop((-r), r); i.doneLoop(); i.loop()) {
-					if (i.x >= -2 && i.z >= -2) { // TODO - Remove this to render behind you.
+					if (i.x >= -1 || i.z>=-1) { // TODO - Remove this to render behind you.
 						target.setPlus(i, cC);
 						if (target.y >= 0 && target.y < World.WORLD_HEIGHT &&
 								Math.abs(target.x) < 32768 &&
 								Math.abs(target.z) < 32768) {
 							if (i.x == r || i.x == -r || i.y == r || i.y == -r || i.z == r || i.z == -r) {
-								chunk = World.chunkMap.get(target.x, target.y, target.z);
-								if (chunk == null) {
-									if (World.buildQueue.size()<World.FRAMES_PER_CYCLE) {
-										chunk = new Chunk(target);
-										World.buildQueue.add(chunk);
+								if(cC.distance(target)<WORLD_SIZE) {
+									chunk = toRender.get(target.x, target.y, target.z);
+									if (chunk == null) {
+										if (World.buildQueue.size() < framesPerCycle) {
+											if (garbage.isEmpty())
+												chunk = new Chunk();
+											else {
+												chunk = garbage.get(0);
+												garbage.remove(0);
+											}
+											chunk.set(target.x, target.y, target.z);
+											World.buildQueue.add(chunk);
+											chunk.addToMap();
+										}
+									} else if (chunk.hasMesh && chunk.solidMesh != null) {
+										chunk.solidMesh.render();
 										chunk.addToMap();
+										toRender.remove(chunk.hashCode());
+									} else {
+										chunk.addToMap();
+										toRender.remove(chunk.hashCode());
 									}
-								} else if (chunk.hasMesh && chunk.solidMesh != null) {
-									chunk.solidMesh.render();
 								}
 							}
 						}
 					}
 				}
+			}
+			for(Chunk chunk:toRender.values()) {
+				garbage.add(chunk);
 			}
 		} else {
 			for(Chunk chunk:World.chunkMap.values())
@@ -135,12 +160,15 @@ public class GameMain extends ApplicationAdapter {
 					chunk.solidMesh.render();
 		}
 
+		Gdx.gl.glEnable(GL20.GL_BLEND);
+		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		for(Chunk chunk:World.chunkMap.values())
 			if(chunk.hasMesh && chunk.transMesh != null)
 				chunk.transMesh.render();
+		Gdx.gl.glDisable(GL20.GL_BLEND);
 		shader.end();
 		frameCounter++;
-		if(frameCounter>World.FRAMES_PER_CYCLE)
+		if(frameCounter>framesPerCycle)
 			frameCounter=0;
 	}
 }
