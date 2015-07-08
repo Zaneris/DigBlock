@@ -98,6 +98,14 @@ public class Int3 {
 		z-=value;
 	}
 
+	public boolean lessThan(int value) {
+		return x<value || y<value || z<value;
+	}
+
+	public boolean greaterThan(int value) {
+		return x>value || y>value || z>value;
+	}
+
 	// Allow for easier to read code for all the 3D loops
 	static int test = 0;
 	public void newLoop(int start, int target) {

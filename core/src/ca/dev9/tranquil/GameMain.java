@@ -61,11 +61,9 @@ public class GameMain extends ApplicationAdapter {
 
 	private Texture tex;
 	private boolean isLoaded = false;
-	private int r;
 	private final Int3 i = new Int3();
 	private final Int3 cC = new Int3();
 	private final Int3 target = new Int3();
-	private Chunk chunk;
 	private final ChunkMap<Chunk> toRender = new <Chunk>ChunkMap<Chunk>();
 	private final ArrayList<Chunk> garbage = new <Chunk>ArrayList<Chunk>();
 	private byte frameCounter = 0;
@@ -79,11 +77,7 @@ public class GameMain extends ApplicationAdapter {
 		World.buildChunks();
 		World.updateFaces();
 		World.createMeshes();
-		Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
-		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
-		//this will render the triangles to GL
 		if(World.TEXTURES_ON) {
 			if (assets.update()) {
 				if (!isLoaded) {
@@ -103,80 +97,82 @@ public class GameMain extends ApplicationAdapter {
 					ChunkMeshGenerator.createMesh(chunk);
 			curWireframe=World.WIREFRAME;
 		}
-		if(!World.WIREFRAME) {
-			Gdx.gl.glEnable(GL20.GL_CULL_FACE);
-			Gdx.gl.glCullFace(GL20.GL_BACK);
-		}
 
-		camera.update();
+		if(frameCounter==0) updateVisible();
+		renderWorld();
+		frameCounter++;
+		if(frameCounter>framesPerCycle)
+			frameCounter=0;
+	}
 
-		// Shader must be started prior to setting any uniforms
-		shader.begin();
-		if(World.TEXTURES_ON) {
-			tex.bind();
-			shader.setUniformi("u_diffuseTexture", 0);
-		}
-		shader.setUniformMatrix("u_projTrans", camera.combined);
+	private void updateVisible() {
 		cC.set(camera.position);
 		cC.div(Chunk.CHUNK_SIZE);
-		if(frameCounter==0 && !curWireframe) {
-			toRender.clear();
-			toRender.putAll(World.chunkMap);
-			World.chunkMap.clear();
-			for (r = 0; r < WORLD_SIZE; r++) {
-				for (i.newLoop((-r), r); i.doneLoop(); i.loop()) {
-					if (i.x >= -3 && i.z>=-3) { // TODO - Remove this to render behind you.
-						target.setPlus(i, cC);
-						if (target.y >= 0 && target.y < World.WORLD_VCHUNK &&
-								Math.abs(target.x) < 32768 &&
-								Math.abs(target.z) < 32768) {
-							if (i.x == r || i.x == -r || i.y == r || i.y == -r || i.z == r || i.z == -r) {
-								if(cC.distance(target)<WORLD_SIZE) {
-									chunk = toRender.get(target.x, target.y, target.z);
-									if (chunk == null) {
-										if (World.buildQueue.size() < framesPerCycle) {
-											if (garbage.isEmpty())
-												chunk = new Chunk();
-											else {
-												chunk = garbage.get(0);
-												garbage.remove(0);
-											}
-											chunk.set(target.x, target.y, target.z);
-											World.buildQueue.add(chunk);
-											chunk.addToMap();
+		toRender.clear();
+		toRender.putAll(World.chunkMap);
+		World.chunkMap.clear();
+		Chunk chunk;
+		for (int r = 0; r < WORLD_SIZE; r++) {
+			for (i.newLoop((-r), r); i.doneLoop(); i.loop()) {
+				if (i.x >= -3 && i.z>=-3) { // TODO - Remove this to render behind you.
+					target.setPlus(i, cC);
+					if (target.y >= 0 && target.y < World.WORLD_VCHUNK &&
+							Math.abs(target.x) < 32768 &&
+							Math.abs(target.z) < 32768) {
+						if (i.x == r || i.x == -r || i.y == r || i.y == -r || i.z == r || i.z == -r) {
+							if(cC.distance(target)<WORLD_SIZE) {
+								chunk = toRender.get(target.x, target.y, target.z);
+								if (chunk == null) {
+									if (World.buildQueue.size() < framesPerCycle) {
+										if (garbage.isEmpty())
+											chunk = new Chunk();
+										else {
+											chunk = garbage.get(0);
+											garbage.remove(0);
 										}
-									} else if (chunk.hasMesh && chunk.solidMesh != null) {
-										chunk.solidMesh.render();
+										chunk.set(target.x, target.y, target.z);
+										World.buildQueue.add(chunk);
 										chunk.addToMap();
-										toRender.remove(chunk.hashCode());
-									} else {
-										chunk.addToMap();
-										toRender.remove(chunk.hashCode());
 									}
+								} else {
+									chunk.addToMap();
+									toRender.remove(chunk.hashCode());
 								}
 							}
 						}
 					}
 				}
 			}
-			for(Chunk chunk:toRender.values()) {
-				garbage.add(chunk);
-			}
-		} else {
-			for(Chunk chunk:World.chunkMap.values())
-				if(chunk.hasMesh && chunk.solidMesh!=null)
-					chunk.solidMesh.render();
 		}
+		for(Chunk tR:toRender.values()) {
+			garbage.add(tR);
+		}
+	}
 
+	private void renderWorld() {
+		camera.update();
+		shader.begin();
+		Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
+		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+		if(World.TEXTURES_ON) {
+			tex.bind();
+			shader.setUniformi("u_diffuseTexture", 0);
+		}
+		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
+		Gdx.gl.glCullFace(GL20.GL_BACK);
+		shader.setUniformMatrix("u_projTrans", camera.combined);
+		for(Chunk tR:World.chunkMap.values())
+			if(tR.hasMesh && tR.solidMesh!=null)
+				tR.solidMesh.render();
+		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		for(Chunk chunk:World.chunkMap.values())
 			if(chunk.hasMesh && chunk.transMesh != null)
 				chunk.transMesh.render();
 		Gdx.gl.glDisable(GL20.GL_BLEND);
+		Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
 		shader.end();
-		frameCounter++;
-		if(frameCounter>framesPerCycle)
-			frameCounter=0;
 	}
 }

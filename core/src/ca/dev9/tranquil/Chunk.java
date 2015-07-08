@@ -81,7 +81,15 @@ public class Chunk {
 		World.chunkMap.put(hashCode(), this);
 	}
 
+	public Block getBlock(int x, int y, int z) {
+		if(x<0 || y<0 || z<0 || x>15 || y>15 || z>15)
+			return World.getBlock(x + position.x, y + position.y, z + position.z);
+		return blocks[x][y][z];
+	}
+
 	public Block getBlock(Int3 int3) {
+		if(int3.lessThan(0) || int3.greaterThan(15))
+			return World.getBlock(int3.x + position.x, int3.y + position.y, int3.z + position.z);
 		return blocks[int3.x][int3.y][int3.z];
 	}
 }
