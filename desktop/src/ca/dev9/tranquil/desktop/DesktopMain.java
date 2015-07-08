@@ -35,7 +35,7 @@ public class DesktopMain extends GameMain implements InputProcessor {
 				InputHandler.setXAxis(10f);
 				break;
 			case Input.Keys.X:
-				World.WIREFRAME = !World.WIREFRAME;
+				curWireframe = !curWireframe;
 		}
 		return false;
 	}

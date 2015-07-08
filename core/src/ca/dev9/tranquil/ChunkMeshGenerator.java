@@ -36,7 +36,6 @@ public final class ChunkMeshGenerator {
 			buildMesh(chunk, chunk.visSolidFaces, true);
 		if(chunk.visTransFaces>0)
 			buildMesh(chunk, chunk.visTransFaces, false);
-		chunk.hasMesh = true;
 	}
 
 	private static void buildMesh(Chunk chunk, int faces, boolean solid) {
@@ -78,12 +77,7 @@ public final class ChunkMeshGenerator {
 			x = target.x;
 			y = target.y;
 			z = target.z;
-			if(hasFlag(faces,Block.FACE_BOTTOM)) {
-				z += 1f;
-				d = bottom;
-				c = sideColor;
-				faces = removeFlag(faces,Block.FACE_BOTTOM);
-			} else if(hasFlag(faces,Block.FACE_SOUTH)) {
+			if(hasFlag(faces,Block.FACE_SOUTH)) {
 				d = south;
 				c = sideColor;
 				faces = removeFlag(faces, Block.FACE_SOUTH);
@@ -108,28 +102,36 @@ public final class ChunkMeshGenerator {
 				d = top;
 				c = topColor;
 				faces = removeFlag(faces, Block.FACE_TOP);
+			} else if(hasFlag(faces,Block.FACE_BOTTOM)) {
+				z += 1f;
+				d = bottom;
+				c = sideColor;
+				faces = removeFlag(faces,Block.FACE_BOTTOM);
 			} else break; // <-- Should never actually occur.
 
 			if(World.WIREFRAME) {
-				for(idx = 0; idx < 8; idx++) {
-					switch (idx) {
-						case 0:
-						case 7:
-							addBottomRight();
-							break;
-						case 1:
-						case 2:
-							addTopRight();
-							break;
-						case 3:
-						case 4:
-							addTopLeft();
-							break;
-						case 5:
-						case 6:
-							addBottomLeft();
+				for(idx = 0; idx < 4; idx++) {
+					if(idx==0) {
+						addBottomRight();
+						addColor();
+						addTopRight();
+						addColor();
+					} else if (idx==1 && !(d!=top && d!=bottom && hasFlag(faces, Block.FACE_TOP))) {
+						addTopRight();
+						addColor();
+						addTopLeft();
+						addColor();
+					} else if(idx==2) {
+						addTopLeft();
+						addColor();
+						addBottomLeft();
+						addColor();
+					} else if (idx==3 && d==top) {
+						addBottomLeft();
+						addColor();
+						addBottomRight();
+						addColor();
 					}
-					verts[j++] = c;
 				}
 			} else {
 				for (idx = 0; idx < 6; idx++) {
@@ -193,6 +195,10 @@ public final class ChunkMeshGenerator {
 			verts[j++] = 0f;
 			verts[j++] = 0f;
 		}
+	}
+
+	private static void addColor() {
+		verts[j++] = c;
 	}
 
 	private static byte removeFlag(byte faces, byte flag) {

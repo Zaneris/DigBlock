@@ -16,7 +16,6 @@ public class Chunk {
 	public int visTransFaces;
 	public ChunkMesh solidMesh;
 	public ChunkMesh transMesh;
-	public boolean hasMesh;
 	public boolean wait; // Awaiting new Mesh
 	public boolean built;
 
@@ -30,10 +29,7 @@ public class Chunk {
 		position.mult(CHUNK_SIZE);
 		visSolidFaces = 0;
 		visTransFaces = 0;
-		hasMesh = false;
 		wait = false;
-		if(solidMesh!=null) solidMesh.reset();
-		if(transMesh!=null) transMesh.reset();
 		built = false;
 		for(x=0;x<16;x++)
 			for(y=0;y<16;y++)
@@ -54,6 +50,19 @@ public class Chunk {
 			World.meshQueue.add(this);
 			wait = true;
 		}
+	}
+
+	public boolean hasSolidMesh() {
+		return solidMesh!=null && solidMesh.vertices>0;
+	}
+
+	public boolean hasTransMesh() {
+		return transMesh!=null && transMesh.vertices>0;
+	}
+
+	public void reset() {
+		if(solidMesh!=null) solidMesh.reset();
+		if(transMesh!=null) transMesh.reset();
 	}
 
 	@Override

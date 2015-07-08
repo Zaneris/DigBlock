@@ -14,8 +14,9 @@ public class GameMain extends ApplicationAdapter {
 	private PerspectiveCamera camera;
 	private AssetManager assets;
 	public static ShaderProgram shader;
-	public static boolean mobile = false;
-	public byte framesPerCycle = 10;
+	public boolean mobile = false;
+	protected byte framesPerCycle = 10;
+	protected byte WORLD_SIZE = 16;
 
 	private static String getShader(String path) {
 		return Gdx.files.internal(path).readString();
@@ -38,8 +39,6 @@ public class GameMain extends ApplicationAdapter {
 		if (log!=null && log.length()!=0)
 			System.out.println("Shader Log: "+log);
 	}
-
-	protected static byte WORLD_SIZE = 16;
 	private static final float CAM = World.WORLD_VCHUNK *Chunk.CHUNK_SIZE + 1f;
 
 	@Override
@@ -64,11 +63,13 @@ public class GameMain extends ApplicationAdapter {
 	private final Int3 i = new Int3();
 	private final Int3 cC = new Int3();
 	private final Int3 target = new Int3();
+	private final ArrayList<ChunkMesh> solidMeshes = new <ChunkMesh>ArrayList<ChunkMesh>();
+	private final ArrayList<ChunkMesh> transMeshes = new <ChunkMesh>ArrayList<ChunkMesh>();
 	private final ChunkMap<Chunk> toRender = new <Chunk>ChunkMap<Chunk>();
 	private final ArrayList<Chunk> garbage = new <Chunk>ArrayList<Chunk>();
 	private byte frameCounter = 0;
 	public static float dT;
-	private boolean curWireframe;
+	protected boolean curWireframe;
 
 	@Override
 	public void render () {
@@ -91,13 +92,6 @@ public class GameMain extends ApplicationAdapter {
 	}
 
 	void flush() {
-		if(curWireframe!=World.WIREFRAME) {
-			for(Chunk chunk:World.chunkMap.values())
-				if(chunk.hasMesh)
-					ChunkMeshGenerator.createMesh(chunk);
-			curWireframe=World.WIREFRAME;
-		}
-
 		if(frameCounter==0) updateVisible();
 		renderWorld();
 		frameCounter++;
@@ -108,19 +102,25 @@ public class GameMain extends ApplicationAdapter {
 	private void updateVisible() {
 		cC.set(camera.position);
 		cC.div(Chunk.CHUNK_SIZE);
-		toRender.clear();
+		solidMeshes.clear();
+		transMeshes.clear();
 		toRender.putAll(World.chunkMap);
 		World.chunkMap.clear();
 		Chunk chunk;
+		boolean wireChange = false;
+		if(curWireframe!=World.WIREFRAME) {
+			World.WIREFRAME = !World.WIREFRAME;
+			wireChange = true;
+		}
 		for (int r = 0; r < WORLD_SIZE; r++) {
 			for (i.newLoop((-r), r); i.doneLoop(); i.loop()) {
-				if (i.x >= -3 && i.z>=-3) { // TODO - Remove this to render behind you.
-					target.setPlus(i, cC);
-					if (target.y >= 0 && target.y < World.WORLD_VCHUNK &&
-							Math.abs(target.x) < 32768 &&
-							Math.abs(target.z) < 32768) {
-						if (i.x == r || i.x == -r || i.y == r || i.y == -r || i.z == r || i.z == -r) {
-							if(cC.distance(target)<WORLD_SIZE) {
+				if (Math.abs(i.x)==r || Math.abs(i.y)==r || Math.abs(i.z)==r) {
+					if (i.x >= -3 && i.z >= -3) { // TODO - Remove this to render behind you.
+						target.setPlus(i, cC);
+						if (target.y >= 0 && target.y < World.WORLD_VCHUNK &&
+								Math.abs(target.x) < 32768 &&
+								Math.abs(target.z) < 32768) {
+							if (cC.distance(target) < WORLD_SIZE) {
 								chunk = toRender.get(target.x, target.y, target.z);
 								if (chunk == null) {
 									if (World.buildQueue.size() < framesPerCycle) {
@@ -135,6 +135,12 @@ public class GameMain extends ApplicationAdapter {
 										chunk.addToMap();
 									}
 								} else {
+									if(wireChange)
+										ChunkMeshGenerator.createMesh(chunk);
+									if (chunk.hasSolidMesh())
+										solidMeshes.add(chunk.solidMesh);
+									if (chunk.hasTransMesh())
+										transMeshes.add(chunk.transMesh);
 									chunk.addToMap();
 									toRender.remove(chunk.hashCode());
 								}
@@ -145,8 +151,10 @@ public class GameMain extends ApplicationAdapter {
 			}
 		}
 		for(Chunk tR:toRender.values()) {
+			tR.reset();
 			garbage.add(tR);
 		}
+		toRender.clear();
 	}
 
 	private void renderWorld() {
@@ -162,15 +170,15 @@ public class GameMain extends ApplicationAdapter {
 		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
 		Gdx.gl.glCullFace(GL20.GL_BACK);
 		shader.setUniformMatrix("u_projTrans", camera.combined);
-		for(Chunk tR:World.chunkMap.values())
-			if(tR.hasMesh && tR.solidMesh!=null)
-				tR.solidMesh.render();
+		for(ChunkMesh tR:solidMeshes)
+			if(tR.vertices>0)
+				tR.render();
 		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		for(Chunk chunk:World.chunkMap.values())
-			if(chunk.hasMesh && chunk.transMesh != null)
-				chunk.transMesh.render();
+		for(ChunkMesh tR:transMeshes)
+			if(tR.vertices>0)
+				tR.render();
 		Gdx.gl.glDisable(GL20.GL_BLEND);
 		Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
 		shader.end();

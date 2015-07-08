@@ -22,7 +22,7 @@ public class ChunkMesh {
 			new VertexAttributes(a_position, (World.TEXTURES_ON ? a_texCoords : a_color));
 
 	private VertexData vertexData;
-	private int vertices;
+	public int vertices;
 
 	public void setData(float[] floats, int size) {
 		if(vertexData!=null)
@@ -43,5 +43,8 @@ public class ChunkMesh {
 
 	public void reset() {
 		vertices = 0;
+		if(vertexData!=null)
+			vertexData.dispose();
+		vertexData = null;
 	}
 }

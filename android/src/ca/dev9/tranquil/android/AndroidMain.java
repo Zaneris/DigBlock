@@ -2,6 +2,7 @@ package ca.dev9.tranquil.android;
 
 import ca.dev9.tranquil.GameMain;
 import ca.dev9.tranquil.InputHandler;
+import ca.dev9.tranquil.World;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 
@@ -9,6 +10,8 @@ import com.badlogic.gdx.InputProcessor;
  * Created by Zaneris on 05/07/2015.
  */
 public class AndroidMain extends GameMain implements InputProcessor {
+	int originY = 0;
+
 	@Override
 	public void create() {
 		WORLD_SIZE=12;
@@ -35,18 +38,27 @@ public class AndroidMain extends GameMain implements InputProcessor {
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		InputHandler.setXAxis(1f);
+		if(screenX < 200 && screenY < 200)
+			curWireframe = !curWireframe;
+		else originY = screenY;
 		return true;
 	}
 
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		InputHandler.setXAxis(0f);
 		return false;
 	}
 
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
+		if(screenX>=200 && screenY>=200) {
+			float drag = (originY-screenY)/10f;
+			if(drag>10f)
+				drag = 10f;
+			else if(drag<-10f)
+				drag = -10f;
+			InputHandler.setXAxis(drag);
+		}
 		return false;
 	}
 
