@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Vector3;
  */
 public class Int3 {
 	public int x, y, z;
-	private Int3 loopTarget;
+	private int loopTarget;
 	private int loopStart;
 
 	public Int3() {}
@@ -107,35 +107,47 @@ public class Int3 {
 	}
 
 	// Allow for easier to read code for all the 3D loops
-	static int test = 0;
 	public void newLoop(int start, int target) {
 		set(start);
-		if(loopTarget==null) {
-			loopTarget = new Int3(target, target, target + 1);
-			loopStart = start;
+		loopStart = start;
+		loopTarget = target;
+	}
+
+	public void cubeLoop() {
+		if(z<loopTarget) {
+			if(Math.abs(y)==loopTarget || Math.abs(x)==loopTarget)
+				z++;
+			else z = loopTarget;
+		} else if(x<loopTarget) {
+			z = loopStart;
+			if(Math.abs(y)==loopTarget || Math.abs(z)==loopTarget)
+				x++;
+			else x = loopTarget;
 		} else {
-			loopTarget.set(target, target, target + 1);
-			loopStart = start;
+			z = loopStart;
+			x = loopStart;
+			if(Math.abs(z)==loopTarget || Math.abs(x)==loopTarget)
+				y++;
+			else y = loopTarget;
 		}
 	}
 
 	// Circle through the 3D loop
 	public void loop() {
-		if(z<(loopTarget.z-1)) {
+		if(z<loopTarget) {
 			z++;
-		} else if(x<loopTarget.x) {
+		} else if(x<loopTarget) {
 			z = loopStart;
 			x++;
-		} else if(y<loopTarget.y) {
+		} else {
 			z = loopStart;
 			x = loopStart;
 			y++;
-		} else if(x==loopTarget.x)
-			z++;
+		}
 	}
 
 	public boolean doneLoop() {
-		return !this.equals(loopTarget);
+		return y<=loopTarget;
 	}
 
 	public void reset() {

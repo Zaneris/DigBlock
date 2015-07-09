@@ -16,7 +16,7 @@ public class GameMain extends ApplicationAdapter {
 	public static ShaderProgram shader;
 	public boolean mobile = false;
 	protected byte framesPerCycle = 10;
-	protected byte WORLD_SIZE = 16;
+	protected byte WORLD_SIZE = 40;
 
 	private static String getShader(String path) {
 		return Gdx.files.internal(path).readString();
@@ -113,37 +113,35 @@ public class GameMain extends ApplicationAdapter {
 			wireChange = true;
 		}
 		for (int r = 0; r < WORLD_SIZE; r++) {
-			for (i.newLoop((-r), r); i.doneLoop(); i.loop()) {
-				if (Math.abs(i.x)==r || Math.abs(i.y)==r || Math.abs(i.z)==r) {
-					if (i.x >= -3 && i.z >= -3) { // TODO - Remove this to render behind you.
-						target.setPlus(i, cC);
-						if (target.y >= 0 && target.y < World.WORLD_VCHUNK &&
-								Math.abs(target.x) < 32768 &&
-								Math.abs(target.z) < 32768) {
-							if (cC.distance(target) < WORLD_SIZE) {
-								chunk = toRender.get(target.x, target.y, target.z);
-								if (chunk == null) {
-									if (World.buildQueue.size() < framesPerCycle) {
-										if (garbage.isEmpty())
-											chunk = new Chunk();
-										else {
-											chunk = garbage.get(0);
-											garbage.remove(0);
-										}
-										chunk.set(target.x, target.y, target.z);
-										World.buildQueue.add(chunk);
-										chunk.addToMap();
+			for (i.newLoop((-r), r); i.doneLoop(); i.cubeLoop()) {
+				if (i.x >= -3 && i.z >= -3) { // TODO - Remove this to render behind you.
+					target.setPlus(i, cC);
+					if (target.y >= 0 && target.y < World.WORLD_VCHUNK &&
+							Math.abs(target.x) < 32768 &&
+							Math.abs(target.z) < 32768) {
+						if (cC.distance(target) < WORLD_SIZE) {
+							chunk = toRender.get(target.x, target.y, target.z);
+							if (chunk == null) {
+								if (World.buildQueue.size() < framesPerCycle) {
+									if (garbage.isEmpty())
+										chunk = new Chunk();
+									else {
+										chunk = garbage.get(0);
+										garbage.remove(0);
 									}
-								} else {
-									if(wireChange)
-										ChunkMeshGenerator.createMesh(chunk);
-									if (chunk.hasSolidMesh())
-										solidMeshes.add(chunk.solidMesh);
-									if (chunk.hasTransMesh())
-										transMeshes.add(chunk.transMesh);
+									chunk.set(target.x, target.y, target.z);
+									World.buildQueue.add(chunk);
 									chunk.addToMap();
-									toRender.remove(chunk.hashCode());
 								}
+							} else {
+								if (wireChange)
+									ChunkMeshGenerator.createMesh(chunk);
+								if (chunk.hasSolidMesh())
+									solidMeshes.add(chunk.solidMesh);
+								if (chunk.hasTransMesh())
+									transMeshes.add(chunk.transMesh);
+								chunk.addToMap();
+								toRender.remove(chunk.hashCode());
 							}
 						}
 					}
