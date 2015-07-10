@@ -2,24 +2,28 @@
 	precision mediump float;
 #endif
 
-uniform sampler2D u_water;
-uniform sampler2D u_dirt;
-uniform sampler2D u_grassSide;
-uniform sampler2D u_grassTop;
-uniform float u_alpha;
-varying vec2 v_diffuseUV;
-varying float v_tex;
+uniform sampler2D u_Water;
+uniform sampler2D u_Dirt;
+uniform sampler2D u_GrassSide;
+uniform sampler2D u_GrassTop;
+uniform float u_Alpha;
+varying vec2 v_DiffuseUV;
+varying float v_Tex;
+varying float v_Light;
 
 
 void main() {
-	int i = int(v_tex);
+	int i = int(v_Tex);
+	vec3 rgb;
 	if(i==0)
-		gl_FragColor.rgb = texture2D(u_water, v_diffuseUV).rgb;
+		rgb = texture2D(u_Water, v_DiffuseUV).rgb;
 	else if(i==1)
-		gl_FragColor.rgb = texture2D(u_dirt, v_diffuseUV).rgb;
+		rgb = texture2D(u_Dirt, v_DiffuseUV).rgb;
 	else if(i==2)
-		gl_FragColor.rgb = texture2D(u_grassSide, v_diffuseUV).rgb;
+		rgb = texture2D(u_GrassSide, v_DiffuseUV).rgb;
 	else if(i==3)
-        gl_FragColor.rgb = texture2D(u_grassTop, v_diffuseUV).rgb;
-	gl_FragColor.a = u_alpha;
+        rgb = texture2D(u_GrassTop, v_DiffuseUV).rgb;
+    rgb *= v_Light;
+    gl_FragColor.rgb = rgb;
+	gl_FragColor.a = u_Alpha;
 }

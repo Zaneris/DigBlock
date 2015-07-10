@@ -12,14 +12,16 @@ import com.badlogic.gdx.graphics.glutils.VertexData;
  * Created by Zaneris on 06/07/2015.
  */
 public class ChunkMesh {
-	private static final VertexAttribute a_position =
-			new VertexAttribute(VertexAttributes.Usage.Position, 3, "a_position");
-	private static final VertexAttribute a_color =
-			new VertexAttribute(VertexAttributes.Usage.ColorPacked, 4, "a_color");
-	private static final VertexAttribute a_texCoords =
-			new VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, "a_texCoords");
-	private static final VertexAttribute a_tex =
-			new VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_tex");
+	private static final VertexAttribute a_Position =
+			new VertexAttribute(VertexAttributes.Usage.Position, 3, "a_Position");
+	private static final VertexAttribute a_Color =
+			new VertexAttribute(VertexAttributes.Usage.ColorPacked, 4, "a_Color");
+	private static final VertexAttribute a_TexCoords =
+			new VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, "a_TexCoords");
+	private static final VertexAttribute a_Normal =
+			new VertexAttribute(VertexAttributes.Usage.Normal, 3, "a_Normal");
+	private static final VertexAttribute a_Tex =
+			new VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_Tex");
 
 	private VertexData vertexData;
 	public int vertices;
@@ -27,10 +29,12 @@ public class ChunkMesh {
 	public void setData(float[] floats, int size) {
 		if(vertexData!=null)
 			vertexData.dispose();
-		vertexData = new VertexBufferObject(true, size, a_position,
-				World.TEXTURES_ON && !World.WIREFRAME ? a_texCoords : a_color, a_tex);
+		if(World.TEXTURES_ON && !World.WIREFRAME)
+			vertexData = new VertexBufferObject(true,size,a_Position,a_TexCoords,a_Normal,a_Tex);
+		else
+			vertexData = new VertexBufferObject(true,size,a_Position,a_Color);
 		vertexData.setVertices(floats,0,size);
-		vertices = size/(World.TEXTURES_ON && !World.WIREFRAME ? 6 : 5);
+		vertices = size/(World.TEXTURES_ON && !World.WIREFRAME ? 9 : 4);
 	}
 
 	public void render(ShaderProgram shader) {

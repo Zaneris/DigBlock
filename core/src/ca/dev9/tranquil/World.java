@@ -3,6 +3,7 @@ package ca.dev9.tranquil;
 import ca.dev9.tranquil.blocks.Block;
 import ca.dev9.tranquil.utils.Int3;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.math.Vector3;
 
 import java.util.ArrayList;
 
@@ -17,6 +18,7 @@ public class World {
 	public static final float 	TERRAIN_INTENSITY2 = 0.015f;
 	public static final byte 	WATER_HEIGHT = 15;
 	public static final boolean TEXTURES_ON = true;
+	public static final Vector3 SUNLIGHT = new Vector3(0.61f,0.64f,-0.47f).nor();
 	public static boolean 		WIREFRAME = false;
 	public static final ChunkMap <Chunk> chunkMap 	= new <Chunk>ChunkMap<Chunk>();
 	public static final ArrayList<Chunk> buildQueue = new <Chunk>ArrayList<Chunk>();
@@ -40,9 +42,7 @@ public class World {
 				for (i.z = 0; i.z < Chunk.CHUNK_SIZE; i.z++) {
 					h = terrainHeight(i.x + p.x, i.z + p.z);
 					for (i.y = 0; i.y < Chunk.CHUNK_SIZE; i.y++) {
-						if (i.y + p.y < h) {
-							// TODO - Add line below once lighting is enabled
-							// || (i.y + p.y == j && i.y + p.y < WATER_HEIGHT))
+						if (i.y + p.y < h || (i.y + p.y == h && i.y + p.y < WATER_HEIGHT)) {
 							chunk.createBlock(Block.DIRT, i);
 						} else if (i.y + p.y == h) {
 							chunk.createBlock(Block.GRASS, i);
