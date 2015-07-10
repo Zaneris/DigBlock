@@ -30,6 +30,6 @@ void main() {
 	i = mod(normData,6.0);
 	v_Light = max(dot(normal(int(i)), u_VectorToLight), 0.0);
 	v_Light += 0.5;
-	gl_Position =  u_ProjTrans * vec4(a_Position.xyz, 1.0);
+	gl_Position = u_ProjTrans * vec4(a_Position.xyz, 1.0);
 	v_Tex = (normData-i)/6.0;
 }
