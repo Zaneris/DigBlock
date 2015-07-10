@@ -17,11 +17,9 @@ public class ChunkMesh {
 	private static final VertexAttribute a_Color =
 			new VertexAttribute(VertexAttributes.Usage.ColorPacked, 4, "a_Color");
 	private static final VertexAttribute a_TexCoords =
-			new VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, "a_TexCoords");
-	private static final VertexAttribute a_Normal =
-			new VertexAttribute(VertexAttributes.Usage.Normal, 3, "a_Normal");
-	private static final VertexAttribute a_Tex =
-			new VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_Tex");
+			new VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_TexCoords");
+	private static final VertexAttribute a_TexNormal =
+			new VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_TexNormal");
 
 	private VertexData vertexData;
 	public int vertices;
@@ -30,11 +28,11 @@ public class ChunkMesh {
 		if(vertexData!=null)
 			vertexData.dispose();
 		if(World.TEXTURES_ON && !World.WIREFRAME)
-			vertexData = new VertexBufferObject(true,size,a_Position,a_TexCoords,a_Normal,a_Tex);
+			vertexData = new VertexBufferObject(true,size,a_Position,a_TexNormal);
 		else
 			vertexData = new VertexBufferObject(true,size,a_Position,a_Color);
 		vertexData.setVertices(floats,0,size);
-		vertices = size/(World.TEXTURES_ON && !World.WIREFRAME ? 9 : 4);
+		vertices = size/4;
 	}
 
 	public void render(ShaderProgram shader) {

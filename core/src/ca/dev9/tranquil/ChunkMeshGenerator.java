@@ -65,56 +65,54 @@ public final class ChunkMeshGenerator {
 	private static final Vector3 top 	= new Vector3( 1f,0f, 1f);
 	private static final Vector3 bottom = new Vector3( 1f,0f,-1f);
 
-	private static final Vector3 n_Normal = new Vector3(0f,0f,1f);
-	private static final Vector3 s_Normal = new Vector3(0f,0f,-1f);
-	private static final Vector3 e_Normal = new Vector3(-1f,0f,0f);
-	private static final Vector3 w_Normal = new Vector3(1f,0f,0f);
-	private static final Vector3 t_Normal = new Vector3(0f,1f,0f);
-	private static final Vector3 b_Normal = new Vector3(0f,-1f,0f);
+	private static final byte n_Normal = 0;
+	private static final byte s_Normal = 1;
+	private static final byte e_Normal = 2;
+	private static final byte w_Normal = 3;
+	private static final byte t_Normal = 4;
+	private static final byte b_Normal = 5;
 
-	private static Vector3 d,n;
+	private static Vector3 d;
 	private static int idx = 0;
 
 	private static float x,y,z,c;
-	private static byte tex;
+	private static int tex;
 	private static void addFaces(float sideColor, float topColor, byte sideTex, byte topTex, byte faces, boolean solid) {
 		do {
 			x = target.x;
 			y = target.y;
 			z = target.z;
 			c = sideColor;
-			tex = sideTex;
 			if(hasFlag(faces,Block.FACE_SOUTH)) {
 				d = south;
-				n = s_Normal;
+				tex = sideTex*6+s_Normal;
 				faces = removeFlag(faces, Block.FACE_SOUTH);
 			} else if(hasFlag(faces, Block.FACE_EAST)) {
 				d = east;
-				n = e_Normal;
+				tex = sideTex*6+e_Normal;
 				z += 1f;
 				faces = removeFlag(faces, Block.FACE_EAST);
 			} else if(hasFlag(faces, Block.FACE_NORTH)) {
 				d = north;
-				n = n_Normal;
+				tex = sideTex*6+n_Normal;
 				z += 1f;
 				x += 1f;
 				faces = removeFlag(faces, Block.FACE_NORTH);
 			} else if(hasFlag(faces, Block.FACE_WEST)) {
 				d = west;
-				n = w_Normal;
+				tex = sideTex*6+w_Normal;
 				x += 1f;
 				faces = removeFlag(faces, Block.FACE_WEST);
 			} else if(hasFlag(faces, Block.FACE_TOP)) {
 				y += (solid ? 1f : 0.7f);
 				d = top;
-				n = t_Normal;
+				tex = topTex*6+t_Normal;
 				c = topColor;
-				tex = topTex;
 				faces = removeFlag(faces, Block.FACE_TOP);
 			} else if(hasFlag(faces,Block.FACE_BOTTOM)) {
 				z += 1f;
 				d = bottom;
-				n = b_Normal;
+				tex = sideTex*6+b_Normal;
 				faces = removeFlag(faces,Block.FACE_BOTTOM);
 			} else break; // <-- Should never actually occur.
 
@@ -161,9 +159,7 @@ public final class ChunkMeshGenerator {
 		verts[j++] = y;
 		verts[j++] = z;
 		if (addUV) {
-			verts[j++] = 1;
-			verts[j++] = 1;
-			addNormals();
+			verts[j++] = tex*4+3;
 		} else {
 			verts[j++] = c;
 		}
@@ -174,9 +170,7 @@ public final class ChunkMeshGenerator {
 		verts[j++] = y + d.y;
 		verts[j++] = d==top || d==bottom ? z + d.z : z;
 		if (addUV) {
-			verts[j++] = 1;
-			verts[j++] = 0;
-			addNormals();
+			verts[j++] = tex*4+2;
 		} else {
 			verts[j++] = c;
 		}
@@ -187,9 +181,7 @@ public final class ChunkMeshGenerator {
 		verts[j++] = y + d.y;
 		verts[j++] = z + d.z;
 		if (addUV) {
-			verts[j++] = 0;
-			verts[j++] = 0;
-			addNormals();
+			verts[j++] = tex*4;
 		} else {
 			verts[j++] = c;
 		}
@@ -200,19 +192,10 @@ public final class ChunkMeshGenerator {
 		verts[j++] = y;
 		verts[j++] = d==top || d==bottom ? z : z + d.z;
 		if (addUV) {
-			verts[j++] = 0;
-			verts[j++] = 1;
-			addNormals();
+			verts[j++] = tex*4+1;
 		} else {
 			verts[j++] = c;
 		}
-	}
-
-	private static void addNormals() {
-		verts[j++] = n.x;
-		verts[j++] = n.y;
-		verts[j++] = n.z;
-		verts[j++] = tex;
 	}
 
 	private static byte removeFlag(byte faces, byte flag) {
