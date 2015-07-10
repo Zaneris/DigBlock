@@ -8,29 +8,19 @@ varying float v_Tex;
 varying float v_Light;
 
 vec3 normal(int i) {
-	if(i==0)		// North
-		return vec3(0,0,1);
-	else if (i==1)	// South
-		return vec3(0,0,-1);
-	else if(i==2)	// East
-		return vec3(-1,0,0);
-	else if(i==3)	// West
-		return vec3(1,0,0);
-	else if(i==4)	// Top
-		return vec3(0,1,0);
-	else			// Bottom
-		return vec3(0,-1,0);
+	if(i==0) return vec3(0,0,1);
+	else if (i==1) return vec3(0,0,-1);
+	else if(i==2) return vec3(-1,0,0);
+	else if(i==3) return vec3(1,0,0);
+	else if(i==4) return vec3(0,1,0);
+	else return vec3(0,-1,0);
 }
 
 vec2 texCoords(int i) {
-	if(i==0)
-		return vec2(0,0);
-	else if (i==1)
-		return vec2(0,1);
-	else if (i==2)
-		return vec2(1,0);
-	else
-		return vec2(1,1);
+	if(i==0) return vec2(0,0);
+	else if (i==1) return vec2(0,1);
+	else if (i==2) return vec2(1,0);
+	else return vec2(1,1);
 }
 
 void main() {

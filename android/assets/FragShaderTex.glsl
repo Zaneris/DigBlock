@@ -11,19 +11,14 @@ varying vec2 v_DiffuseUV;
 varying float v_Tex;
 varying float v_Light;
 
+vec3 rgb (int i) {
+	if(i==0) return texture2D(u_Water, v_DiffuseUV).rgb;
+	else if(i==1) return texture2D(u_Dirt, v_DiffuseUV).rgb;
+	else if(i==2) return texture2D(u_GrassSide, v_DiffuseUV).rgb;
+	else return texture2D(u_GrassTop, v_DiffuseUV).rgb;
+}
 
 void main() {
-	int i = int(v_Tex);
-	vec3 rgb;
-	if(i==0)
-		rgb = texture2D(u_Water, v_DiffuseUV).rgb;
-	else if(i==1)
-		rgb = texture2D(u_Dirt, v_DiffuseUV).rgb;
-	else if(i==2)
-		rgb = texture2D(u_GrassSide, v_DiffuseUV).rgb;
-	else if(i==3)
-        rgb = texture2D(u_GrassTop, v_DiffuseUV).rgb;
-    rgb *= v_Light;
-    gl_FragColor.rgb = rgb;
+	gl_FragColor.rgb = rgb(int(v_Tex))*v_Light;
 	gl_FragColor.a = u_Alpha;
 }
