@@ -17,9 +17,9 @@ public class Block {
 	public static final byte FACE_WEST   = 0b0000_0001;
 	public static final byte ALL_FACES	 = 0b0011_1111;
 
-	public byte blockType = 0;
-	public static final byte WATER  = -1;
-	public static final byte AIR    = 0;
+	public byte blockType = -1;
+	public static final byte AIR    = -1;
+	public static final byte WATER  = 0;
 	public static final byte DIRT   = 1;
 	public static final byte GRASS  = 2;
 
@@ -34,7 +34,7 @@ public class Block {
 	}
 
 	public void reset() {
-		blockType = 0;
+		blockType = -1;
 		visibleFaces = 0;
 	}
 
@@ -108,6 +108,27 @@ public class Block {
 			case GRASS:
 				if(top) return grass;
 				else return dirt;
+		}
+		return 0;
+	}
+
+	public byte getTopTexture() {
+		return getTextureFromBlockType(blockType, true);
+	}
+
+	public byte getSideTexture() {
+		return getTextureFromBlockType(blockType, false);
+	}
+
+	public static byte getTextureFromBlockType(byte blockType, boolean top) {
+		switch(blockType) {
+			case WATER:
+				return 0;
+			case DIRT:
+				return 1;
+			case GRASS:
+				if(top) return 3;
+				else return 2;
 		}
 		return 0;
 	}

@@ -9,45 +9,42 @@ import com.badlogic.gdx.math.Vector3;
  */
 public final class ChunkMeshGenerator {
 	private static final byte CHUNK_SIZE = World.CHUNK_SIZE;
-	private static final byte POSITION_COMPONENTS = 3;
-	private static final byte COLOR_COMPONENTS = 1;
-	private static final byte TEXTURE_COORDS = 2;
-	public final static byte NUM_COMPONENTS = POSITION_COMPONENTS
-			+ (World.TEXTURES_ON ? TEXTURE_COORDS : COLOR_COMPONENTS);
+	private static final byte MAX_COMPONENTS = 5;
 	private static final byte VERTS_PER_TRI = 3;
 	private static final byte TRIS_PER_FACE = 2;
 	private static final byte FACES_PER_CUBE = 6;
 
 	// Max visible faces would be every other cube rendered.
 	public static final int MAX_FLOATS = VERTS_PER_TRI * TRIS_PER_FACE * FACES_PER_CUBE
-			* (CHUNK_SIZE/2) * (CHUNK_SIZE/2) * (CHUNK_SIZE/2) * NUM_COMPONENTS;
+			* (CHUNK_SIZE/2) * (CHUNK_SIZE/2) * (CHUNK_SIZE/2) * MAX_COMPONENTS;
 
 	private static float[] verts = new float[MAX_FLOATS];
-	private static int numFloats;
 	private static Block block;
 	private static int j;
 	private static Int3 p;
 	private static final Int3 i = new Int3();
 	private static final Int3 target = new Int3();
+	private static boolean addUV;
 
 	public static void createMesh(Chunk chunk) {
 		p = chunk.position;
+		addUV = World.TEXTURES_ON && !World.WIREFRAME;
 		if(chunk.visSolidFaces>0)
-			buildMesh(chunk, chunk.visSolidFaces, true);
+			buildMesh(chunk, true);
 		if(chunk.visTransFaces>0)
-			buildMesh(chunk, chunk.visTransFaces, false);
+			buildMesh(chunk, false);
 	}
 
-	private static void buildMesh(Chunk chunk, int faces, boolean solid) {
-		numFloats = faces*TRIS_PER_FACE*VERTS_PER_TRI*NUM_COMPONENTS;
-
+	private static void buildMesh(Chunk chunk, boolean solid) {
 		j = 0; // Reset number of floats/vertices
 		for (i.newLoop(0, CHUNK_SIZE - 1); i.doneLoop(); i.loop()) {
 			block = chunk.getBlock(i);
 			if ((block.hasFaces() && block.hasFlag(Block.SOLID) && solid) ||
 					(block.hasFaces() && !solid && !block.hasFlag(Block.SOLID))) {
 				target.copyPlus(i, p);
-				addFaces(block.getSideColor(), block.getTopColor(), block.copyFaces(), solid);
+				addFaces(block.getSideColor(), block.getTopColor(),
+						block.getSideTexture(), block.getTopTexture(),
+						block.copyFaces(), solid);
 			}
 		}
 		if(solid) {
@@ -72,40 +69,39 @@ public final class ChunkMeshGenerator {
 	private static int idx = 0;
 
 	private static float x,y,z,c;
-	private static void addFaces(float sideColor, float topColor, byte faces, boolean solid) {
+	private static byte tex;
+	private static void addFaces(float sideColor, float topColor, byte sideTex, byte topTex, byte faces, boolean solid) {
 		do {
 			x = target.x;
 			y = target.y;
 			z = target.z;
+			c = sideColor;
+			tex = sideTex;
 			if(hasFlag(faces,Block.FACE_SOUTH)) {
 				d = south;
-				c = sideColor;
 				faces = removeFlag(faces, Block.FACE_SOUTH);
 			} else if(hasFlag(faces, Block.FACE_EAST)) {
 				d = east;
 				z += 1f;
-				c = sideColor;
 				faces = removeFlag(faces, Block.FACE_EAST);
 			} else if(hasFlag(faces, Block.FACE_NORTH)) {
 				d = north;
 				z += 1f;
 				x += 1f;
-				c = sideColor;
 				faces = removeFlag(faces, Block.FACE_NORTH);
 			} else if(hasFlag(faces, Block.FACE_WEST)) {
 				d = west;
 				x += 1f;
-				c = sideColor;
 				faces = removeFlag(faces, Block.FACE_WEST);
 			} else if(hasFlag(faces, Block.FACE_TOP)) {
 				y += (solid ? 1f : 0.8f);
 				d = top;
 				c = topColor;
+				tex = topTex;
 				faces = removeFlag(faces, Block.FACE_TOP);
 			} else if(hasFlag(faces,Block.FACE_BOTTOM)) {
 				z += 1f;
 				d = bottom;
-				c = sideColor;
 				faces = removeFlag(faces,Block.FACE_BOTTOM);
 			} else break; // <-- Should never actually occur.
 
@@ -113,24 +109,16 @@ public final class ChunkMeshGenerator {
 				for(idx = 0; idx < 4; idx++) {
 					if(idx==0) {
 						addBottomRight();
-						addColor();
 						addTopRight();
-						addColor();
 					} else if (idx==1 && !(d!=top && d!=bottom && hasFlag(faces, Block.FACE_TOP))) {
 						addTopRight();
-						addColor();
 						addTopLeft();
-						addColor();
 					} else if(idx==2) {
 						addTopLeft();
-						addColor();
 						addBottomLeft();
-						addColor();
 					} else if (idx==3 && d==top) {
 						addBottomLeft();
-						addColor();
 						addBottomRight();
-						addColor();
 					}
 				}
 			} else {
@@ -150,8 +138,6 @@ public final class ChunkMeshGenerator {
 						case 5:
 							addBottomLeft();
 					}
-					if (!World.TEXTURES_ON)
-						verts[j++] = c;
 				}
 			}
 		} while (faces>0);
@@ -161,44 +147,52 @@ public final class ChunkMeshGenerator {
 		verts[j++] = x;
 		verts[j++] = y;
 		verts[j++] = z;
-		if (World.TEXTURES_ON) {
-			verts[j++] = 1f;
-			verts[j++] = 0f;
+		if (addUV) {
+			verts[j++] = 1;
+			verts[j++] = 1;
+		} else {
+			verts[j++] = c;
 		}
-	}
+		verts[j++] = tex;
+ 	}
 
 	private static void addTopRight() {
 		verts[j++] = x;
 		verts[j++] = y + d.y;
 		verts[j++] = d==top || d==bottom ? z + d.z : z;
-		if (World.TEXTURES_ON) {
-			verts[j++] = 1f;
-			verts[j++] = 1f;
+		if (addUV) {
+			verts[j++] = 1;
+			verts[j++] = 0;
+		} else {
+			verts[j++] = c;
 		}
+		verts[j++] = tex;
 	}
 
 	private static void addTopLeft() {
 		verts[j++] = x + d.x;
 		verts[j++] = y + d.y;
 		verts[j++] = z + d.z;
-		if (World.TEXTURES_ON) {
-			verts[j++] = 0f;
-			verts[j++] = 1f;
+		if (addUV) {
+			verts[j++] = 0;
+			verts[j++] = 0;
+		} else {
+			verts[j++] = c;
 		}
+		verts[j++] = tex;
 	}
 
 	private static void addBottomLeft() {
 		verts[j++] = x + d.x;
 		verts[j++] = y;
 		verts[j++] = d==top || d==bottom ? z : z + d.z;
-		if (World.TEXTURES_ON) {
-			verts[j++] = 0f;
-			verts[j++] = 0f;
+		if (addUV) {
+			verts[j++] = 0;
+			verts[j++] = 1;
+		} else {
+			verts[j++] = c;
 		}
-	}
-
-	private static void addColor() {
-		verts[j++] = c;
+		verts[j++] = tex;
 	}
 
 	private static byte removeFlag(byte faces, byte flag) {

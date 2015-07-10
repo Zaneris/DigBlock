@@ -4,6 +4,7 @@ import ca.dev9.tranquil.utils.Int3;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.TextureLoader;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
@@ -13,10 +14,12 @@ import java.util.ArrayList;
 public class GameMain extends ApplicationAdapter {
 	private PerspectiveCamera camera;
 	private AssetManager assets;
-	public static ShaderProgram shader;
+	private static ShaderProgram shader;
+	private static ShaderProgram texShader;
 	public boolean mobile = false;
 	protected byte framesPerCycle = 10;
-	protected byte WORLD_SIZE = 40;
+	protected byte WORLD_SIZE = 20;
+	private final TextureLoader.TextureParameter param = new TextureLoader.TextureParameter();
 
 	private static String getShader(String path) {
 		return Gdx.files.internal(path).readString();
@@ -24,17 +27,19 @@ public class GameMain extends ApplicationAdapter {
 
 	protected void createMeshShader() {
 		ShaderProgram.pedantic = false;
-		if(World.TEXTURES_ON) {
-			shader = new ShaderProgram(
+		texShader = new ShaderProgram(
 					getShader("VertShaderTex.glsl"),
 					getShader("FragShaderTex.glsl"));
-		} else {
-			shader = new ShaderProgram(
+		shader = new ShaderProgram(
 					getShader("VertShader.glsl"),
 					getShader("FragShader.glsl"));
-		}
 		String log = shader.getLog();
 		if (!shader.isCompiled())
+			throw new GdxRuntimeException(log);
+		if (log!=null && log.length()!=0)
+			System.out.println("Shader Log: "+log);
+		log = texShader.getLog();
+		if (!texShader.isCompiled())
 			throw new GdxRuntimeException(log);
 		if (log!=null && log.length()!=0)
 			System.out.println("Shader Log: "+log);
@@ -45,8 +50,12 @@ public class GameMain extends ApplicationAdapter {
 	public void create () {
 		createMeshShader();
 		if(World.TEXTURES_ON) {
+			param.genMipMaps = true;
 			assets = new AssetManager();
-			assets.load("dirt.png", Texture.class);
+			assets.load("water.png", Texture.class, param);
+			assets.load("dirt.png", Texture.class, param);
+			assets.load("grassSide.png", Texture.class, param);
+			assets.load("grassTop.png", Texture.class, param);
 		}
 		camera = new PerspectiveCamera(75f,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		camera.position.set(-50f, CAM, -50f);
@@ -58,7 +67,6 @@ public class GameMain extends ApplicationAdapter {
 		World.createNewWorld(camera);
 	}
 
-	private Texture tex;
 	private boolean isLoaded = false;
 	private final Int3 i = new Int3();
 	private final Int3 cC = new Int3();
@@ -67,6 +75,7 @@ public class GameMain extends ApplicationAdapter {
 	private final ArrayList<ChunkMesh> transMeshes = new <ChunkMesh>ArrayList<ChunkMesh>();
 	private final ChunkMap<Chunk> toRender = new <Chunk>ChunkMap<Chunk>();
 	private final ArrayList<Chunk> garbage = new <Chunk>ArrayList<Chunk>();
+	private final ArrayList<Texture> textures = new <Texture>ArrayList<Texture>();
 	private byte frameCounter = 0;
 	public static float dT;
 	protected boolean curWireframe;
@@ -82,7 +91,13 @@ public class GameMain extends ApplicationAdapter {
 		if(World.TEXTURES_ON) {
 			if (assets.update()) {
 				if (!isLoaded) {
-					tex = assets.get("dirt.png", Texture.class);
+					textures.clear();
+					textures.add(assets.get("water.png", Texture.class));
+					textures.add(assets.get("dirt.png", Texture.class));
+					textures.add(assets.get("grassSide.png", Texture.class));
+					textures.add(assets.get("grassTop.png", Texture.class));
+					for(Texture tex:textures)
+						tex.setFilter(Texture.TextureFilter.MipMap, Texture.TextureFilter.Nearest);
 					isLoaded = true;
 				}
 				flush();
@@ -157,28 +172,40 @@ public class GameMain extends ApplicationAdapter {
 
 	private void renderWorld() {
 		camera.update();
-		shader.begin();
+		ShaderProgram shaderOut;
+		if(World.TEXTURES_ON && !World.WIREFRAME)
+			shaderOut = texShader;
+		else
+			shaderOut = shader;
+		shaderOut.begin();
 		Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
 		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-		if(World.TEXTURES_ON) {
-			tex.bind();
-			shader.setUniformi("u_diffuseTexture", 0);
+		if(World.TEXTURES_ON && !World.WIREFRAME) {
+			for(int t = 0; t<textures.size(); t++)
+				textures.get(t).bind(t);
+			shaderOut.setUniformi("u_water", 0);
+			shaderOut.setUniformi("u_dirt", 1);
+			shaderOut.setUniformi("u_grassSide", 2);
+			shaderOut.setUniformi("u_grassTop", 3);
+			shaderOut.setUniformf("u_alpha", 1f);
 		}
 		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
 		Gdx.gl.glCullFace(GL20.GL_BACK);
-		shader.setUniformMatrix("u_projTrans", camera.combined);
+		shaderOut.setUniformMatrix("u_projTrans", camera.combined);
 		for(ChunkMesh tR:solidMeshes)
 			if(tR.vertices>0)
-				tR.render();
+				tR.render(shaderOut);
 		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		if(World.TEXTURES_ON && !World.WIREFRAME)
+			shaderOut.setUniformf("u_alpha", 0.5f);
 		for(ChunkMesh tR:transMeshes)
 			if(tR.vertices>0)
-				tR.render();
+				tR.render(shaderOut);
 		Gdx.gl.glDisable(GL20.GL_BLEND);
 		Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
-		shader.end();
+		shaderOut.end();
 	}
 }

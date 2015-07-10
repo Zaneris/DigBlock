@@ -114,40 +114,38 @@ public class Int3 {
 	}
 
 	public void cubeLoop() {
-		if(z<loopTarget) {
-			if(Math.abs(y)==loopTarget || Math.abs(x)==loopTarget)
-				z++;
-			else z = loopTarget;
-		} else if(x<loopTarget) {
-			z = loopStart;
-			if(Math.abs(y)==loopTarget || Math.abs(z)==loopTarget)
-				x++;
-			else x = loopTarget;
-		} else {
-			z = loopStart;
-			x = loopStart;
+		if(y<loopTarget) {
 			if(Math.abs(z)==loopTarget || Math.abs(x)==loopTarget)
 				y++;
 			else y = loopTarget;
+		} else if(x<loopTarget) {
+			y = loopStart;
+			if(Math.abs(z)==loopTarget || Math.abs(y)==loopTarget)
+				x++;
+			else x = loopTarget;
+		} else {
+			y = loopStart;
+			x = loopStart;
+			z++;
 		}
 	}
 
 	// Circle through the 3D loop
 	public void loop() {
-		if(z<loopTarget) {
-			z++;
+		if(y<loopTarget) {
+			y++;
 		} else if(x<loopTarget) {
-			z = loopStart;
+			y = loopStart;
 			x++;
 		} else {
-			z = loopStart;
+			y = loopStart;
 			x = loopStart;
-			y++;
+			z++;
 		}
 	}
 
 	public boolean doneLoop() {
-		return y<=loopTarget;
+		return z<=loopTarget;
 	}
 
 	public void reset() {
