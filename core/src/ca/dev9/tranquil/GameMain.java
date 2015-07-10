@@ -52,10 +52,10 @@ public class GameMain extends ApplicationAdapter {
 		if(World.TEXTURES_ON) {
 			param.genMipMaps = true;
 			assets = new AssetManager();
-			assets.load("Water.png", Texture.class, param);
-			assets.load("Dirt.png", Texture.class, param);
-			assets.load("GrassSide.png", Texture.class, param);
-			assets.load("GrassTop.png", Texture.class, param);
+			assets.load("water.png", Texture.class, param);
+			assets.load("dirt.png", Texture.class, param);
+			assets.load("grassSide.png", Texture.class, param);
+			assets.load("grassTop.png", Texture.class, param);
 		}
 		camera = new PerspectiveCamera(75f,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		camera.position.set(-50f, CAM, -50f);
@@ -92,10 +92,10 @@ public class GameMain extends ApplicationAdapter {
 			if (assets.update()) {
 				if (!isLoaded) {
 					textures.clear();
-					textures.add(assets.get("Water.png", Texture.class));
-					textures.add(assets.get("Dirt.png", Texture.class));
-					textures.add(assets.get("GrassSide.png", Texture.class));
-					textures.add(assets.get("GrassTop.png", Texture.class));
+					textures.add(assets.get("water.png", Texture.class));
+					textures.add(assets.get("dirt.png", Texture.class));
+					textures.add(assets.get("grassSide.png", Texture.class));
+					textures.add(assets.get("grassTop.png", Texture.class));
 					for(Texture tex:textures)
 						tex.setFilter(Texture.TextureFilter.MipMap, Texture.TextureFilter.Nearest);
 					isLoaded = true;
