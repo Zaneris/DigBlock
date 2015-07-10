@@ -22,17 +22,17 @@ void main() {
 	f = mod(normData,6.0);
 	i = int(f);
 	vec3 normal;
-	if(i==0) 		// North
+	if(i==0)		// North
 		normal = vec3(0,0,1);
-	else if (i==1) 	// South
+	else if (i==1)	// South
 		normal = vec3(0,0,-1);
-	else if(i==2) 	// East
+	else if(i==2)	// East
 		normal = vec3(-1,0,0);
-	else if(i==3) 	// West
+	else if(i==3)	// West
 		normal = vec3(1,0,0);
-	else if(i==4) 	// Top
+	else if(i==4)	// Top
 		normal = vec3(0,1,0);
-	else  			// Bottom
+	else			// Bottom
 		normal = vec3(0,-1,0);
 	v_Light = max(dot(normal, u_VectorToLight), 0.0);
 	v_Light += 0.5;
