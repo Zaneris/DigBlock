@@ -9,6 +9,7 @@ public class DesktopLauncher {
 		config.title="Tranquil";
 		config.width=854;
 		config.height=480;
+		config.samples=4;
 		new LwjglApplication(new DesktopMain(), config);
 	}
 }
