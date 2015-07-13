@@ -42,8 +42,8 @@ public class GameMain extends ApplicationAdapter {
 		shaderDepth = new ShaderProgram(
 				getShader("shaders/VertDepth.glsl"),
 				getShader("shaders/FragDepth.glsl"));
-		String log = shaderTex.getLog();
-		if (!shaderTex.isCompiled())
+		String log = shaderDepth.getLog();
+		if (!shaderDepth.isCompiled())
 			throw new GdxRuntimeException(log);
 		if (log!=null && log.length()!=0)
 			System.out.println("Shader Log: "+log);
@@ -64,7 +64,7 @@ public class GameMain extends ApplicationAdapter {
 			assets.load("textures/GrassTop.png", Texture.class, param);
 		}
 		updateWorldSize(WORLD_SIZE);
-		frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888,16384,16384,true);
+		frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888,2048,2048,true);
 		camera = new PerspectiveCamera(75f,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		camera.position.set(-50f, CAM, -50f);
 		float halfWorld = WORLD_SIZE*8f+8f;
@@ -78,6 +78,7 @@ public class GameMain extends ApplicationAdapter {
 	private boolean isLoaded = false;
 	private final Int3 i = new Int3();
 	private final Int3 cC = new Int3();
+	private final Int3 lastChunk = new Int3();
 	private final Int3 target = new Int3();
 	private final ArrayList<ChunkMesh> solidMeshes = new <ChunkMesh>ArrayList<ChunkMesh>();
 	private final ArrayList<ChunkMesh> transMeshes = new <ChunkMesh>ArrayList<ChunkMesh>();
@@ -97,12 +98,6 @@ public class GameMain extends ApplicationAdapter {
 		World.updateFaces();
 		World.createMeshes();
 		camera.update();
-		sun.position.set(camera.position);
-		sun.position.y += depth/2;
-		sun.rotateAround(camera.position,Vector3.X,10f);
-		sun.rotateAround(camera.position,Vector3.Z,75f);
-		sun.lookAt(camera.position);
-		sun.update();
 
 		if(World.TEXTURES_ON) {
 			if (assets.update()) {
@@ -123,7 +118,10 @@ public class GameMain extends ApplicationAdapter {
 	}
 
 	void flush() {
-		if(frameCounter==0) updateVisible();
+		if(frameCounter==0) {
+			updateVisible();
+			updateShadows();
+		}
 		renderWorld();
 		frameCounter++;
 		if(frameCounter>framesPerCycle)
@@ -186,23 +184,34 @@ public class GameMain extends ApplicationAdapter {
 		toRender.clear();
 	}
 
-	private void renderWorld() {
-		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
-		if(frameCounter==0) {
-			frameBuffer.begin();
+	private void updateShadows() {
+		if(!cC.equals(lastChunk)) {
+			sun.position.set(camera.position);
+			sun.position.y += depth / 2;
+			sun.rotateAround(camera.position, Vector3.X, 10f);
+			sun.rotateAround(camera.position, Vector3.Z, 75f);
+			sun.lookAt(camera.position);
+			sun.update();
+			lastChunk.copyFrom(cC);
+		}
+
+		frameBuffer.begin();
 			Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
 			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+			Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 			Gdx.gl.glDisable(GL20.GL_CULL_FACE);
 			shaderDepth.begin();
-			shaderDepth.setUniformf("u_WorldSize", depth);
-			shaderDepth.setUniformMatrix("u_LightMatrix", sun.combined);
-			for (ChunkMesh tR : solidMeshes)
-				if (tR.vertices > 0)
-					tR.render(shaderDepth);
+				shaderDepth.setUniformf("u_WorldSize", depth);
+				shaderDepth.setUniformMatrix("u_LightMatrix", sun.combined);
+				for (ChunkMesh tR : solidMeshes)
+					if (tR.vertices > 0)
+						tR.render(shaderDepth);
 			shaderDepth.end();
-			frameBuffer.end();
-			depthMap = frameBuffer.getColorBufferTexture();
-		}
+		frameBuffer.end();
+		depthMap = frameBuffer.getColorBufferTexture();
+	}
+
+	private void renderWorld() {
 		ShaderProgram shaderOut;
 		if(World.TEXTURES_ON && !World.WIREFRAME)
 			shaderOut = shaderTex;
@@ -211,6 +220,7 @@ public class GameMain extends ApplicationAdapter {
 		if(World.WIREFRAME) Gdx.gl.glClearColor(0f,0f,0f,1f);
 		else Gdx.gl.glClearColor(0.494f, 0.753f, 0.93f, 1f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 		shaderOut.begin();
 			shaderOut.setUniformf("u_WorldSize", depth);
 			shaderOut.setUniformMatrix("u_CamMatrix", camera.combined);
