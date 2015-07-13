@@ -58,10 +58,10 @@ public class GameMain extends ApplicationAdapter {
 			param = new TextureLoader.TextureParameter();
 			param.genMipMaps = true;
 			assets = new AssetManager();
-			assets.load("textures/Water2.png", Texture.class, param);
-			assets.load("textures/Dirt2.png", Texture.class, param);
-			assets.load("textures/GrassSide2.png", Texture.class, param);
-			assets.load("textures/GrassTop2.png", Texture.class, param);
+			assets.load("textures/Water.png", Texture.class, param);
+			assets.load("textures/Dirt.png", Texture.class, param);
+			assets.load("textures/GrassSide.png", Texture.class, param);
+			assets.load("textures/GrassTop.png", Texture.class, param);
 		}
 		updateWorldSize(WORLD_SIZE);
 		frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888,16384,16384,true);
@@ -108,10 +108,10 @@ public class GameMain extends ApplicationAdapter {
 			if (assets.update()) {
 				if (!isLoaded) {
 					textures.clear();
-					textures.add(assets.get("textures/Water2.png", Texture.class));
-					textures.add(assets.get("textures/Dirt2.png", Texture.class));
-					textures.add(assets.get("textures/GrassSide2.png", Texture.class));
-					textures.add(assets.get("textures/GrassTop2.png", Texture.class));
+					textures.add(assets.get("textures/Water.png", Texture.class));
+					textures.add(assets.get("textures/Dirt.png", Texture.class));
+					textures.add(assets.get("textures/GrassSide.png", Texture.class));
+					textures.add(assets.get("textures/GrassTop.png", Texture.class));
 					for(Texture tex:textures)
 						tex.setFilter(Texture.TextureFilter.MipMap, Texture.TextureFilter.Nearest);
 					isLoaded = true;
