@@ -1,11 +1,14 @@
 attribute vec3 a_Position;
 attribute float a_TexNormal;
 
-uniform mat4 u_ProjTrans;
-uniform vec3 u_VectorToLight;
+uniform mat4 u_CamMatrix;
+uniform mat4 u_LightMatrix;
+uniform vec3 u_LightVector;
 varying vec2 v_DiffuseUV;
+varying vec2 v_DepthMap;
 varying float v_Tex;
 varying float v_Light;
+varying float v_DistToLight;
 
 vec3 normal(int i) {
 	if(i==0) return vec3(0,0,1);
@@ -28,8 +31,10 @@ void main() {
 	v_DiffuseUV = texCoords(int(i));
 	float normData = (a_TexNormal-i)/4.0;
 	i = mod(normData,6.0);
-	v_Light = max(dot(normal(int(i)), u_VectorToLight), 0.0);
-	v_Light += 0.5;
-	gl_Position = u_ProjTrans * vec4(a_Position.xyz, 1.0);
+	v_Light = max(dot(normal(int(i)), -u_LightVector), 0.0) + 0.5;
 	v_Tex = (normData-i)/6.0;
+	vec4 matrix = u_LightMatrix * vec4(a_Position, 1.0);
+	v_DistToLight = (matrix.z+1.0)*2;
+	v_DepthMap = matrix.xy*0.5+0.5;
+	gl_Position = u_CamMatrix * vec4(a_Position, 1.0);
 }
