@@ -3,13 +3,14 @@ package ca.dev9.tranquil;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 
 /**
- * Created by Zaneris on 06/07/2015.
+ * Main player of the game.
+ * @author Zaneris
  */
 public class Player {
 	PerspectiveCamera cam;
 
-	public Player(PerspectiveCamera camera) {
-		cam = camera;
+	public Player() {
+		cam = new PerspectiveCamera();
 	}
 
 	public void axisInput(float x, float y) {

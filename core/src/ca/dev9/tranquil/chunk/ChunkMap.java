@@ -1,9 +1,7 @@
-package ca.dev9.tranquil;
+package ca.dev9.tranquil.chunk;
 
 import ca.dev9.tranquil.utils.Int3;
 import com.badlogic.gdx.utils.IntMap;
-
-import java.util.HashMap;
 
 /**
  * Created by Zaneris on 03/07/2015.

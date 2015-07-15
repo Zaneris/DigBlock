@@ -1,6 +1,6 @@
 package ca.dev9.tranquil.blocks;
 
-import ca.dev9.tranquil.Chunk;
+import ca.dev9.tranquil.chunk.Chunk;
 import com.badlogic.gdx.graphics.Color;
 
 /**
@@ -131,5 +131,22 @@ public class Block {
 				else return 2;
 		}
 		return 0;
+	}
+
+	public static void setFlags(byte face1, byte face2, Block block1, Block block2) {
+		if(block2!=null) {
+			if(block2.chunk.built) {
+				if (block1.blockType != WATER || block2.blockType != WATER) {
+					boolean solid1 = block1.hasFlag(Block.SOLID) ||
+							(block1.blockType == WATER &&
+									block2.blockType == AIR);
+					boolean solid2 = block2.hasFlag(Block.SOLID) ||
+							(block1.blockType == AIR &&
+									block2.blockType == WATER);
+					if (solid2) block2.setFlag(solid1, face1);
+					if (solid1) block1.setFlag(solid2, face2);
+				}
+			}
+		}
 	}
 }

@@ -1,5 +1,6 @@
-package ca.dev9.tranquil;
+package ca.dev9.tranquil.chunk;
 
+import ca.dev9.tranquil.screens.World;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.VertexAttribute;

@@ -1,14 +1,17 @@
-package ca.dev9.tranquil;
+package ca.dev9.tranquil.utils;
 
+import ca.dev9.tranquil.Config;
+import ca.dev9.tranquil.chunk.Chunk;
+import ca.dev9.tranquil.chunk.ChunkMesh;
+import ca.dev9.tranquil.screens.World;
 import ca.dev9.tranquil.blocks.Block;
-import ca.dev9.tranquil.utils.Int3;
 import com.badlogic.gdx.math.Vector3;
 
 /**
  * Created by Zaneris on 29/06/2015.
  */
 public final class ChunkMeshGenerator {
-	private static final byte CHUNK_SIZE = World.CHUNK_SIZE;
+	private static final byte CHUNK_SIZE = Chunk.CHUNK_SIZE;
 	private static final byte MAX_COMPONENTS = 9;
 	private static final byte VERTS_PER_TRI = 3;
 	private static final byte TRIS_PER_FACE = 2;
@@ -28,7 +31,7 @@ public final class ChunkMeshGenerator {
 
 	public static void createMesh(Chunk chunk) {
 		p = chunk.position;
-		addUV = World.TEXTURES_ON && !World.WIREFRAME;
+		addUV = Config.TEXTURES_ON && !Config.WIREFRAME;
 		if(chunk.visSolidFaces>0)
 			buildMesh(chunk, true);
 		if(chunk.visTransFaces>0)
@@ -116,7 +119,7 @@ public final class ChunkMeshGenerator {
 				faces = removeFlag(faces,Block.FACE_BOTTOM);
 			} else break; // <-- Should never actually occur.
 
-			if(World.WIREFRAME) {
+			if(Config.WIREFRAME) {
 				for(idx = 0; idx < 4; idx++) {
 					if(idx==0) {
 						addBottomRight();

@@ -1,68 +1,45 @@
 package ca.dev9.tranquil;
 
+import ca.dev9.tranquil.chunk.Chunk;
+import ca.dev9.tranquil.chunk.ChunkMap;
+import ca.dev9.tranquil.chunk.ChunkMesh;
+import ca.dev9.tranquil.input.InputHandler;
+import ca.dev9.tranquil.screens.Screen;
+import ca.dev9.tranquil.screens.ScreenHandler;
+import ca.dev9.tranquil.screens.ScreenInterface;
+import ca.dev9.tranquil.screens.World;
+import ca.dev9.tranquil.utils.ChunkMeshGenerator;
 import ca.dev9.tranquil.utils.Int3;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.assets.loaders.TextureLoader;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.GdxRuntimeException;
 
 import java.util.ArrayList;
 
 public class GameMain extends ApplicationAdapter {
+	public static ScreenHandler<ScreenInterface> screenHandler;
 	private PerspectiveCamera camera;
 	private OrthographicCamera sun;
-	private AssetManager assets;
-	private static ShaderProgram shaderWire;
-	private static ShaderProgram shaderTex;
-	private static ShaderProgram shaderDepth;
-	private TextureLoader.TextureParameter param;
 	public boolean mobile = false;
 	protected byte framesPerCycle = 10;
 	protected byte WORLD_SIZE = 20;
 	private FrameBuffer frameBuffer;
 	private short depth;
 
-	private static String getShader(String path) {
-		return Gdx.files.internal(path).readString();
-	}
+	private static final float CAM = World.WORLD_VCHUNK * Chunk.CHUNK_SIZE + 1f;
 
-	protected void createMeshShader() {
-		ShaderProgram.pedantic = false;
-		shaderTex = new ShaderProgram(
-				getShader("shaders/VertTex.glsl"),
-				getShader("shaders/FragTex.glsl"));
-		shaderWire = new ShaderProgram(
-				getShader("shaders/VertWire.glsl"),
-				getShader("shaders/FragWire.glsl"));
-		shaderDepth = new ShaderProgram(
-				getShader("shaders/VertDepth.glsl"),
-				getShader("shaders/FragDepth.glsl"));
-		String log = shaderDepth.getLog();
-		if (!shaderDepth.isCompiled())
-			throw new GdxRuntimeException(log);
-		if (log!=null && log.length()!=0)
-			System.out.println("Shader Log: "+log);
+	public GameMain(boolean mobile) {
+		Config.MOBILE = mobile;
+		screenHandler = new ScreenHandler<>();
 	}
-
-	private static final float CAM = World.WORLD_VCHUNK *Chunk.CHUNK_SIZE + 1f;
 
 	@Override
 	public void create () {
-		createMeshShader();
-		if(World.TEXTURES_ON) {
-			param = new TextureLoader.TextureParameter();
-			param.genMipMaps = true;
-			assets = new AssetManager();
-			assets.load("textures/Water.png", Texture.class, param);
-			assets.load("textures/Dirt.png", Texture.class, param);
-			assets.load("textures/GrassSide.png", Texture.class, param);
-			assets.load("textures/GrassTop.png", Texture.class, param);
-		}
+		Graphics.loadShaders();
+		Graphics.loadTextures();
 		updateWorldSize(WORLD_SIZE);
 		frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888,2048,2048,true);
 		camera = new PerspectiveCamera(75f,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
@@ -271,5 +248,11 @@ public class GameMain extends ApplicationAdapter {
 		}
 		sun.viewportHeight = depth;
 		sun.viewportWidth = depth;
+	}
+
+	@Override
+	public void resize(int width, int height) {
+		super.resize(width, height);
+		InputHandler.updateScreenDimensions(width,height);
 	}
 }

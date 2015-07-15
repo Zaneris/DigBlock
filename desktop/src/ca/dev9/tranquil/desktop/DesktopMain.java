@@ -1,8 +1,7 @@
 package ca.dev9.tranquil.desktop;
 
 import ca.dev9.tranquil.GameMain;
-import ca.dev9.tranquil.InputHandler;
-import ca.dev9.tranquil.World;
+import ca.dev9.tranquil.input.InputHandler;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
