@@ -7,7 +7,6 @@ uniform sampler2D u_Water;
 uniform sampler2D u_Dirt;
 uniform sampler2D u_GrassSide;
 uniform sampler2D u_GrassTop;
-uniform float u_WorldSize;
 uniform float u_Alpha;
 varying vec2 v_DiffuseUV;
 varying vec2 v_DepthMap;

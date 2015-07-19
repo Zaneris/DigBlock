@@ -22,4 +22,8 @@ public class ChunkMap<V> extends IntMap<V> {
 	public V get(short x, short y, short z) {
 		return get(Chunk.generateHash(x,y,z));
 	}
+	
+	public void add(V chunk) {
+		put(chunk.hashCode(), chunk);
+	}
 }

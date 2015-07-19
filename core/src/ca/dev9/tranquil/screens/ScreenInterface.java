@@ -8,5 +8,10 @@ public interface ScreenInterface {
 	/**
 	 * Render the screen.
 	 */
-	public void render();
+	public void run();
+	
+	/**
+	 * Should be used to nullify any references set on statics so the garbage collector can reclaim the memory.
+	 */
+	public void dispose();
 }

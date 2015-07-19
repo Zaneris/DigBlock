@@ -12,7 +12,7 @@ public final class WorldBuilder {
 	private static final float 	TERRAIN_INTENSITY2 = 0.015f;
 	private static final byte 	WATER_HEIGHT = 15;
 	private static final byte 	CHUNK_SIZE = Chunk.CHUNK_SIZE;
-	private static final byte 	WORLD_VCHUNK = 2;
+	public static final byte 	WORLD_VCHUNK = 2;
 	public static final byte 	WORLD_VBLOCK = CHUNK_SIZE*WORLD_VCHUNK;
 	private static final Int3 i = new Int3();
 

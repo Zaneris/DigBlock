@@ -8,7 +8,7 @@ import java.util.ArrayList;
  * Ensure screens that handle input are removed from input processing prior to nullifying.
  * @author Zaneris
  */
-public class ScreenHandler<E> extends ArrayList<E> {
+public class ScreenList<E> extends ArrayList<E> {
 	/**
 	 * Remove object from list and InputHandler.
 	 * @param o Object to be removed.
@@ -18,6 +18,7 @@ public class ScreenHandler<E> extends ArrayList<E> {
 	public boolean remove(Object o) {
 		if(Input.class.isAssignableFrom(o.getClass()))
 			((Input)o).destroy();
+		((ScreenInterface)o).dispose();
 		return super.remove(o);
 	}
 }

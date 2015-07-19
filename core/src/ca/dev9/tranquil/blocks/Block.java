@@ -1,6 +1,5 @@
 package ca.dev9.tranquil.blocks;
 
-import ca.dev9.tranquil.chunk.Chunk;
 import com.badlogic.gdx.graphics.Color;
 
 /**
@@ -27,28 +26,17 @@ public class Block {
 	private static final float dirt = Color.valueOf("573B0CFF").toFloatBits();
 	private static final float grass = Color.valueOf("007B0CFF").toFloatBits();
 
-	public Chunk chunk;
-
-	public Block(Chunk chunk) {
-		this.chunk = chunk;
-	}
-
 	public void reset() {
 		blockType = -1;
 		visibleFaces = 0;
 	}
 
-	public void setFlag(byte flag) {
+	public boolean setFlag(byte flag) {
 		if(!hasFlag(flag)) {
 			visibleFaces = (byte) (visibleFaces | flag);
-			if(flag!=SOLID) {
-				if (hasFlag(SOLID))
-					chunk.visSolidFaces++;
-				else
-					chunk.visTransFaces++;
-				chunk.addToMeshQueue();
-			}
+			if(flag!=SOLID) return true;
 		}
+		return false;
 	}
 
 	public void setBlockType(byte type) {
@@ -61,11 +49,11 @@ public class Block {
 		return (visibleFaces&ALL_FACES)>0;
 	}
 
-	public void setFlag(boolean value, byte flag) {
+	public boolean setFlag(boolean value, byte flag) {
 		if(value)
-			removeFlag(flag);
+			return removeFlag(flag);
 		else
-			setFlag(flag);
+			return setFlag(flag);
 	}
 
 	public byte copyFaces() {
@@ -74,17 +62,12 @@ public class Block {
 		else return visibleFaces;
 	}
 
-	public void removeFlag(byte flag) {
+	public boolean removeFlag(byte flag) {
 		if(hasFlag(flag)) {
 			visibleFaces = (byte) (visibleFaces ^ flag);
-			if(flag!=SOLID) {
-				if (hasFlag(SOLID))
-					chunk.visSolidFaces--;
-				else
-					chunk.visTransFaces--;
-				chunk.addToMeshQueue();
-			}
+			if(flag!=SOLID) return true;
 		}
+		return false;
 	}
 
 	public boolean hasFlag(byte flag) {
@@ -131,22 +114,5 @@ public class Block {
 				else return 2;
 		}
 		return 0;
-	}
-
-	public static void setFlags(byte face1, byte face2, Block block1, Block block2) {
-		if(block2!=null) {
-			if(block2.chunk.built) {
-				if (block1.blockType != WATER || block2.blockType != WATER) {
-					boolean solid1 = block1.hasFlag(Block.SOLID) ||
-							(block1.blockType == WATER &&
-									block2.blockType == AIR);
-					boolean solid2 = block2.hasFlag(Block.SOLID) ||
-							(block1.blockType == AIR &&
-									block2.blockType == WATER);
-					if (solid2) block2.setFlag(solid1, face1);
-					if (solid1) block1.setFlag(solid2, face2);
-				}
-			}
-		}
 	}
 }

@@ -1,5 +1,6 @@
 package ca.dev9.tranquil.chunk;
 
+import ca.dev9.tranquil.Config;
 import ca.dev9.tranquil.screens.World;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
@@ -28,7 +29,7 @@ public class ChunkMesh {
 	public void setData(float[] floats, int size) {
 		if(vertexData!=null)
 			vertexData.dispose();
-		if(World.TEXTURES_ON && !World.WIREFRAME)
+		if(!Config.WIREFRAME)
 			vertexData = new VertexBufferObject(true,size,a_Position,a_TexNormal);
 		else
 			vertexData = new VertexBufferObject(true,size,a_Position,a_Color);
@@ -38,7 +39,7 @@ public class ChunkMesh {
 
 	public void render(ShaderProgram shader) {
 		vertexData.bind(shader);
-		if(World.WIREFRAME)
+		if(Config.WIREFRAME)
 			Gdx.gl20.glDrawArrays(GL20.GL_LINES, 0, vertices);
 		else
 			Gdx.gl20.glDrawArrays(GL20.GL_TRIANGLES, 0, vertices);

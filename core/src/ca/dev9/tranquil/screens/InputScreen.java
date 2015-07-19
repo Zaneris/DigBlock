@@ -1,6 +1,6 @@
 package ca.dev9.tranquil.screens;
 
-import ca.dev9.tranquil.GameMain;
+import ca.dev9.tranquil.ScreenManager;
 import ca.dev9.tranquil.input.Input;
 
 /**
@@ -15,7 +15,7 @@ public abstract class InputScreen extends Input implements ScreenInterface {
 	 */
 	public InputScreen(boolean full) {
 		super(full);
-		GameMain.screenHandler.add(this);
+		ScreenManager.screens.add(this);
 	}
 
 	/**
@@ -28,6 +28,6 @@ public abstract class InputScreen extends Input implements ScreenInterface {
 	 */
 	public InputScreen(float x, float y, float width, float height) {
 		super(x, y, width, height);
-		GameMain.screenHandler.add(this);
+		ScreenManager.screens.add(this);
 	}
 }

@@ -2,7 +2,6 @@
 	precision mediump float;
 #endif
 
-uniform float u_WorldSize;
 varying float v_DistToLight;
 
 vec4 rgba(float dist) {

@@ -10,6 +10,7 @@ public final class Config {
 	public static boolean WIREFRAME = false;
 	public static final boolean TEXTURES_ON = false;
 	public static boolean MOBILE;
+	public static byte DRAW_DIST = 20;
 
 	public static final class Keys {
 		public static int[] UP		= new int[] {Input.Keys.W, Input.Keys.UP};

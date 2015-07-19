@@ -1,10 +1,8 @@
-package ca.dev9.tranquil.utils;
+package ca.dev9.tranquil.chunk;
 
 import ca.dev9.tranquil.Config;
-import ca.dev9.tranquil.chunk.Chunk;
-import ca.dev9.tranquil.chunk.ChunkMesh;
-import ca.dev9.tranquil.screens.World;
 import ca.dev9.tranquil.blocks.Block;
+import ca.dev9.tranquil.utils.Int3;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -32,16 +30,14 @@ public final class ChunkMeshGenerator {
 	public static void createMesh(Chunk chunk) {
 		p = chunk.position;
 		addUV = Config.TEXTURES_ON && !Config.WIREFRAME;
-		if(chunk.visSolidFaces>0)
-			buildMesh(chunk, true);
-		if(chunk.visTransFaces>0)
-			buildMesh(chunk, false);
+		buildMesh(chunk, true);
+		buildMesh(chunk, false);
 	}
 
 	private static void buildMesh(Chunk chunk, boolean solid) {
 		j = 0; // Reset number of floats/vertices
 		for (i.newLoop(0, CHUNK_SIZE - 1); i.doneLoop(); i.loop()) {
-			block = chunk.getBlock(i);
+			block = chunk.getBlock(i).block;
 			if ((block.hasFaces() && block.hasFlag(Block.SOLID) && solid) ||
 					(block.hasFaces() && !solid && !block.hasFlag(Block.SOLID))) {
 				target.copyPlus(i, p);

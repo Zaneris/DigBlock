@@ -30,7 +30,7 @@ public class InputHandler implements InputProcessor {
 	}
 
 	public void processInput() {
-		if(World.ACTIVE) {
+		if(World.world!=null) {
 			float x,y,rotX,rotY;
 
 		}

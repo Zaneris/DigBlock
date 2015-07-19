@@ -1,5 +1,6 @@
 package ca.dev9.tranquil.desktop;
 
+import ca.dev9.tranquil.ScreenManager;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 
@@ -10,6 +11,6 @@ public class DesktopLauncher {
 		config.width=854;
 		config.height=480;
 		config.samples=4;
-		new LwjglApplication(new DesktopMain(), config);
+		new LwjglApplication(new ScreenManager(false), config);
 	}
 }
