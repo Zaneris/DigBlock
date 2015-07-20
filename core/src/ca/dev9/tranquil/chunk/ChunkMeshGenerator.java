@@ -1,14 +1,17 @@
-package ca.dev9.tranquil;
+package ca.dev9.tranquil.chunk;
 
+import ca.dev9.tranquil.Config;
 import ca.dev9.tranquil.blocks.Block;
 import ca.dev9.tranquil.utils.Int3;
+import ca.dev9.tranquil.utils.Int1;
 import com.badlogic.gdx.math.Vector3;
 
 /**
- * Created by Zaneris on 29/06/2015.
+ * Generate the mesh for a given chunk.
+ * @author Zaneris
  */
 public final class ChunkMeshGenerator {
-	private static final byte CHUNK_SIZE = World.CHUNK_SIZE;
+	private static final byte CHUNK_SIZE = Chunk.CHUNK_SIZE;
 	private static final byte MAX_COMPONENTS = 9;
 	private static final byte VERTS_PER_TRI = 3;
 	private static final byte TRIS_PER_FACE = 2;
@@ -18,43 +21,50 @@ public final class ChunkMeshGenerator {
 	public static final int MAX_FLOATS = VERTS_PER_TRI * TRIS_PER_FACE * FACES_PER_CUBE
 			* (CHUNK_SIZE/2) * (CHUNK_SIZE/2) * (CHUNK_SIZE/2) * MAX_COMPONENTS;
 
-	private static float[] verts = new float[MAX_FLOATS];
-	private static Block block;
-	private static int j;
-	private static Int3 p;
+	private static final float[] vertSolid = new float[MAX_FLOATS];
+	private static final float[] vertTrans = new float[MAX_FLOATS];
+	private static float[] verts;
+	private static final Int1 solid = new Int1();
+	private static final Int1 trans = new Int1();
+	private static Int1 j;
 	private static final Int3 i = new Int3();
 	private static final Int3 target = new Int3();
 	private static boolean addUV;
 
 	public static void createMesh(Chunk chunk) {
-		p = chunk.position;
-		addUV = World.TEXTURES_ON && !World.WIREFRAME;
-		if(chunk.visSolidFaces>0)
-			buildMesh(chunk, true);
-		if(chunk.visTransFaces>0)
-			buildMesh(chunk, false);
-	}
-
-	private static void buildMesh(Chunk chunk, boolean solid) {
-		j = 0; // Reset number of floats/vertices
-		for (i.newLoop(0, CHUNK_SIZE - 1); i.doneLoop(); i.loop()) {
-			block = chunk.getBlock(i);
-			if ((block.hasFaces() && block.hasFlag(Block.SOLID) && solid) ||
-					(block.hasFaces() && !solid && !block.hasFlag(Block.SOLID))) {
-				target.copyPlus(i, p);
-				addFaces(block.getSideColor(), block.getTopColor(),
-						block.getSideTexture(), block.getTopTexture(),
-						block.copyFaces(), solid);
+		addUV = !Config.WIREFRAME;
+		solid.i = 0; trans.i = 0;
+		boolean isSolid;
+		Block block;
+		for (i.newLoop(0, 15); i.doneLoop(); i.loop()) {
+			block = chunk.blocks[i.x][i.y][i.z];
+			if (block.hasFaces()) {
+				target.copyPlus(i, chunk.position);
+				isSolid = block.hasFlag(Block.SOLID);
+				if(isSolid) {
+					verts = vertSolid;
+					j = solid;
+					addFaces(block.getSideColor(), block.getTopColor(),
+							block.getSideTexture(), block.getTopTexture(),
+							block.copyFaces(), true);
+				} else {
+					verts = vertTrans;
+					j = trans;
+					addFaces(block.getSideColor(), block.getTopColor(),
+							block.getSideTexture(), block.getTopTexture(),
+							block.copyFaces(), false);
+				}
 			}
 		}
-		if(solid) {
-			if(chunk.solidMesh==null)
-				chunk.solidMesh=new ChunkMesh();
-			chunk.solidMesh.setData(verts,j);
-		} else {
-			if(chunk.transMesh==null)
-				chunk.transMesh=new ChunkMesh();
-			chunk.transMesh.setData(verts,j);
+		if(solid.i>0) {
+			if (chunk.solidMesh == null)
+				chunk.solidMesh = new ChunkMesh();
+			chunk.solidMesh.setData(vertSolid, solid.i);
+		}
+		if (trans.i>0) {
+			if (chunk.transMesh == null)
+				chunk.transMesh = new ChunkMesh();
+			chunk.transMesh.setData(vertTrans, trans.i);
 		}
 	}
 
@@ -77,7 +87,8 @@ public final class ChunkMeshGenerator {
 
 	private static float x,y,z,c;
 	private static int tex;
-	private static void addFaces(float sideColor, float topColor, byte sideTex, byte topTex, byte faces, boolean solid) {
+	private static void addFaces(float sideColor, float topColor, byte sideTex,
+								byte topTex, byte faces, boolean solid) {
 		do {
 			x = target.x;
 			y = target.y;
@@ -116,7 +127,7 @@ public final class ChunkMeshGenerator {
 				faces = removeFlag(faces,Block.FACE_BOTTOM);
 			} else break; // <-- Should never actually occur.
 
-			if(World.WIREFRAME) {
+			if(Config.WIREFRAME) {
 				for(idx = 0; idx < 4; idx++) {
 					if(idx==0) {
 						addBottomRight();
@@ -155,46 +166,46 @@ public final class ChunkMeshGenerator {
 	}
 
 	private static void addBottomRight() {
-		verts[j++] = x;
-		verts[j++] = y;
-		verts[j++] = z;
+		verts[j.i++] = x;
+		verts[j.i++] = y;
+		verts[j.i++] = z;
 		if (addUV) {
-			verts[j++] = tex*4+3;
+			verts[j.i++] = tex*4+3;
 		} else {
-			verts[j++] = c;
+			verts[j.i++] = c;
 		}
  	}
 
 	private static void addTopRight() {
-		verts[j++] = x;
-		verts[j++] = y + d.y;
-		verts[j++] = d==top || d==bottom ? z + d.z : z;
+		verts[j.i++] = x;
+		verts[j.i++] = y + d.y;
+		verts[j.i++] = d==top || d==bottom ? z + d.z : z;
 		if (addUV) {
-			verts[j++] = tex*4+2;
+			verts[j.i++] = tex*4+2;
 		} else {
-			verts[j++] = c;
+			verts[j.i++] = c;
 		}
 	}
 
 	private static void addTopLeft() {
-		verts[j++] = x + d.x;
-		verts[j++] = y + d.y;
-		verts[j++] = z + d.z;
+		verts[j.i++] = x + d.x;
+		verts[j.i++] = y + d.y;
+		verts[j.i++] = z + d.z;
 		if (addUV) {
-			verts[j++] = tex*4;
+			verts[j.i++] = tex*4;
 		} else {
-			verts[j++] = c;
+			verts[j.i++] = c;
 		}
 	}
 
 	private static void addBottomLeft() {
-		verts[j++] = x + d.x;
-		verts[j++] = y;
-		verts[j++] = d==top || d==bottom ? z : z + d.z;
+		verts[j.i++] = x + d.x;
+		verts[j.i++] = y;
+		verts[j.i++] = d==top || d==bottom ? z : z + d.z;
 		if (addUV) {
-			verts[j++] = tex*4+1;
+			verts[j.i++] = tex*4+1;
 		} else {
-			verts[j++] = c;
+			verts[j.i++] = c;
 		}
 	}
 

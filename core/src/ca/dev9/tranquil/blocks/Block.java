@@ -1,13 +1,12 @@
 package ca.dev9.tranquil.blocks;
 
-import ca.dev9.tranquil.Chunk;
 import com.badlogic.gdx.graphics.Color;
 
 /**
  * Created by Zaneris on 29/06/2015.
  */
 public class Block {
-	private byte visibleFaces;
+	private byte visibleFaces = 0;
 	public static final byte SOLID       = 0b0100_0000;
 	public static final byte FACE_TOP    = 0b0010_0000;
 	public static final byte FACE_BOTTOM = 0b0001_0000;
@@ -27,28 +26,17 @@ public class Block {
 	private static final float dirt = Color.valueOf("573B0CFF").toFloatBits();
 	private static final float grass = Color.valueOf("007B0CFF").toFloatBits();
 
-	public Chunk chunk;
-
-	public Block(Chunk chunk) {
-		this.chunk = chunk;
-	}
-
 	public void reset() {
 		blockType = -1;
 		visibleFaces = 0;
 	}
 
-	public void setFlag(byte flag) {
+	public boolean setFlag(byte flag) {
 		if(!hasFlag(flag)) {
 			visibleFaces = (byte) (visibleFaces | flag);
-			if(flag!=SOLID) {
-				if (hasFlag(SOLID))
-					chunk.visSolidFaces++;
-				else
-					chunk.visTransFaces++;
-				chunk.addToMeshQueue();
-			}
+			if(flag!=SOLID) return true;
 		}
+		return false;
 	}
 
 	public void setBlockType(byte type) {
@@ -61,11 +49,11 @@ public class Block {
 		return (visibleFaces&ALL_FACES)>0;
 	}
 
-	public void setFlag(boolean value, byte flag) {
+	public boolean setFlag(boolean value, byte flag) {
 		if(value)
-			removeFlag(flag);
+			return removeFlag(flag);
 		else
-			setFlag(flag);
+			return setFlag(flag);
 	}
 
 	public byte copyFaces() {
@@ -74,17 +62,12 @@ public class Block {
 		else return visibleFaces;
 	}
 
-	public void removeFlag(byte flag) {
+	public boolean removeFlag(byte flag) {
 		if(hasFlag(flag)) {
 			visibleFaces = (byte) (visibleFaces ^ flag);
-			if(flag!=SOLID) {
-				if (hasFlag(SOLID))
-					chunk.visSolidFaces--;
-				else
-					chunk.visTransFaces--;
-				chunk.addToMeshQueue();
-			}
+			if(flag!=SOLID) return true;
 		}
+		return false;
 	}
 
 	public boolean hasFlag(byte flag) {
