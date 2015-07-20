@@ -29,6 +29,8 @@ public final class WorldBuilder {
 						chunk.createBlock(Block.GRASS, i);
 					} else if(i.y + p.y <= WATER_HEIGHT) {
 						chunk.createBlock(Block.WATER, i);
+					} else {
+						chunk.createBlock(Block.AIR, i);
 					}
 				}
 			}

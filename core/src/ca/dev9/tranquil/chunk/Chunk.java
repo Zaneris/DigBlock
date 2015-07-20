@@ -32,24 +32,18 @@ public class Chunk {
 
 	public void set(int x, int y, int z) {
 		id.set(x,y,z);
-		position.set(x,y,z);
+		position.set(x, y, z);
 		position.mult(CHUNK_SIZE);
 		wait = false;
 		built = false;
-		for(x=0;x<16;x++)
-			for(y=0;y<16;y++)
-				for(z=0;z<16;z++) {
-					if(blocks[x][y][z] == null)
-						blocks[x][y][z] = new Block();
-					else blocks[x][y][z].reset();
-				}
 		if(chunkBlock ==null)
 			chunkBlock = new ChunkBlock();
 	}
 
-	public void createBlock(byte type, Int3 location) {
-		blocks[location.x][location.y][location.z].reset();
-		blocks[location.x][location.y][location.z].setBlockType(type);
+	public void createBlock(byte type, Int3 l) {
+		if(blocks[l.x][l.y][l.z] == null)
+			blocks[l.x][l.y][l.z] = new Block();
+		blocks[l.x][l.y][l.z].setBlockType(type);
 	}
 
 	public boolean hasSolidMesh() {
@@ -93,42 +87,57 @@ public class Chunk {
 		return (y*521 + x)*31963 + z;
 	}
 	
-	public ChunkBlock getBlock(int x, int y, int z) {
-		if(x<0 || y<0 || z<0 || x>15 || y>15 || z>15)
-			return World.world.getBlock(x + position.x, y + position.y, z + position.z);
-		chunkBlock.chunk = this;
-		chunkBlock.block = blocks[x][y][z];
-		return chunkBlock;
+	public ChunkBlock getChunkBlock(int x, int y, int z) {
+		return World.world.getBlock(x + position.x, y + position.y, z + position.z);
 	}
 
-	public ChunkBlock getBlock(Int3 int3) {
-		return getBlock(int3.x,int3.y,int3.z);
+	public ChunkBlock getChunkBlock(Int3 int3) {
+		return getChunkBlock(int3.x, int3.y, int3.z);
 	}
 
 	public void updateFaces() {
-		ChunkBlock cb = new ChunkBlock();
+		Block b;
 		for (i.newLoop(0, 15); i.doneLoop(); i.loop()) {
-			cb.copyFrom(getBlock(i));
-			setFlags(Block.FACE_EAST, Block.FACE_WEST, cb, getBlock(i.x + 1, i.y, i.z));
-			setFlags(Block.FACE_WEST, Block.FACE_EAST, cb, getBlock(i.x - 1, i.y, i.z));
-			setFlags(Block.FACE_SOUTH,Block.FACE_NORTH,cb, getBlock(i.x, i.y, i.z + 1));
-			setFlags(Block.FACE_NORTH,Block.FACE_SOUTH,cb, getBlock(i.x, i.y, i.z - 1));
-			setFlags(Block.FACE_TOP,Block.FACE_BOTTOM, cb, getBlock(i.x, i.y - 1, i.z));
-			setFlags(Block.FACE_BOTTOM,Block.FACE_TOP, cb, getBlock(i.x, i.y + 1, i.z));
+			b = blocks[i.x][i.y][i.z];
+			if(i.x==15) setFlags(Block.FACE_EAST, Block.FACE_WEST, b, getChunkBlock(i.x+1, i.y, i.z));
+			else setFlags(Block.FACE_EAST, Block.FACE_WEST, b, blocks[i.x+1][i.y][i.z]);
+			if(i.x==0) setFlags(Block.FACE_WEST, Block.FACE_EAST, b, getChunkBlock(i.x - 1, i.y, i.z));
+			else setFlags(Block.FACE_WEST, Block.FACE_EAST, b, blocks[i.x-1][i.y][i.z]);
+			if(i.z==15) setFlags(Block.FACE_SOUTH,Block.FACE_NORTH,b, getChunkBlock(i.x, i.y, i.z + 1));
+			else setFlags(Block.FACE_SOUTH,Block.FACE_NORTH, b, blocks[i.x][i.y][i.z+1]);
+			if(i.z==0) setFlags(Block.FACE_NORTH,Block.FACE_SOUTH,b, getChunkBlock(i.x, i.y, i.z - 1));
+			else setFlags(Block.FACE_NORTH,Block.FACE_SOUTH, b, blocks[i.x][i.y][i.z-1]);
+			if(i.y==0) setFlags(Block.FACE_TOP,Block.FACE_BOTTOM, b, getChunkBlock(i.x, i.y - 1, i.z));
+			else setFlags(Block.FACE_TOP,Block.FACE_BOTTOM, b, blocks[i.x][i.y-1][i.z]);
+			if(i.y==15) setFlags(Block.FACE_BOTTOM,Block.FACE_TOP, b, getChunkBlock(i.x, i.y + 1, i.z));
+			else setFlags(Block.FACE_BOTTOM,Block.FACE_TOP, b, blocks[i.x][i.y+1][i.z]);
+		}
+	}
+
+	private void setFlags(byte face1, byte face2, Block b1, Block b2) {
+		if (b1.blockType != Block.WATER || b2.blockType != Block.WATER) {
+			boolean solid1 = b1.hasFlag(Block.SOLID) ||
+					(b1.blockType == Block.WATER &&
+							b2.blockType == Block.AIR);
+			boolean solid2 = b2.hasFlag(Block.SOLID) ||
+					(b1.blockType == Block.AIR &&
+							b2.blockType == Block.WATER);
+			if (solid2 && b2.setFlag(solid1, face1)) addToMeshQueue();
+			if (solid1 && b1.setFlag(solid2, face2)) addToMeshQueue();
 		}
 	}
 	
-	private void setFlags(byte face1, byte face2, ChunkBlock cb1, ChunkBlock cb2) {
-		if(cb2!=null) {
-			if (cb1.block.blockType != Block.WATER || cb2.block.blockType != Block.WATER) {
-				boolean solid1 = cb1.block.hasFlag(Block.SOLID) ||
-					(cb1.block.blockType == Block.WATER &&
-					cb2.block.blockType == Block.AIR);
-				boolean solid2 = cb2.block.hasFlag(Block.SOLID) ||
-					(cb1.block.blockType == Block.AIR &&
-					cb2.block.blockType == Block.WATER);
-				if (solid2) cb2.setFlag(solid1, face1);
-				if (solid1) cb1.setFlag(solid2, face2);
+	private void setFlags(byte face1, byte face2, Block b, ChunkBlock cb) {
+		if(cb!=null) {
+			if (b.blockType != Block.WATER || cb.block.blockType != Block.WATER) {
+				boolean solid1 = b.hasFlag(Block.SOLID) ||
+					(b.blockType == Block.WATER &&
+					cb.block.blockType == Block.AIR);
+				boolean solid2 = cb.block.hasFlag(Block.SOLID) ||
+					(b.blockType == Block.AIR &&
+					cb.block.blockType == Block.WATER);
+				if (solid2 && cb.block.setFlag(solid1, face1)) cb.chunk.addToMeshQueue();
+				if (solid1 && b.setFlag(solid2, face2)) addToMeshQueue();
 			}
 		}
 	}

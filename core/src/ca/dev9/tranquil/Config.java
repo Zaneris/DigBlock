@@ -10,11 +10,11 @@ public final class Config {
 	public static final boolean DEBUG = true;
 	public static boolean WIREFRAME = false;
 	public static boolean MOBILE;
-	public static byte DRAW_DIST = 10;
+	public static byte DRAW_DIST;
 	
 	public static void load() {
 		if(MOBILE)
-			DRAW_DIST = 10;
+			DRAW_DIST = 12;
 		else
 			DRAW_DIST = 20;
 	}

@@ -20,9 +20,9 @@ public class ScreenManager extends ApplicationAdapter {
 
 	@Override
 	public void create () {
+		Config.load();
 		Graphics.loadShaders();
 		Graphics.loadAssets();
-		Config.load();
 		screens = new ScreenList<>();
 		input = new InputHandler();
 		screens.add(new World());
@@ -30,6 +30,7 @@ public class ScreenManager extends ApplicationAdapter {
 
 	@Override
 	public void render () {
+		input.processInput();
 		if(Graphics.checkAssets())
 			for(ScreenInterface screen:screens)
 				screen.run();
@@ -38,6 +39,8 @@ public class ScreenManager extends ApplicationAdapter {
 	@Override
 	public void resize(int width, int height) {
 		super.resize(width, height);
-		// TODO - Handle window resize.
+		for(ScreenInterface screen:screens)
+			screen.resize(width, height);
+		input.updateScreenDimensions(width, height);
 	}
 }

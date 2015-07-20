@@ -5,6 +5,7 @@ import ca.dev9.tranquil.Graphics;
 import ca.dev9.tranquil.chunk.*;
 import ca.dev9.tranquil.Player;
 import ca.dev9.tranquil.utils.*;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector3;
@@ -52,14 +53,19 @@ public class World extends InputScreen {
 		world = this;
 		seed = Math.random()*10000d;
 		curWireframe = Config.WIREFRAME;
-		depth = (short)(Config.DRAW_DIST*16*2);
 		lightSource = new OrthographicCamera();
 		lightSource.near = 1.0f;
+		frameCounter = 0;
+		player = new Player();
+		updateDepth();
+	}
+
+	private void updateDepth() {
+		depth = (short)(Config.DRAW_DIST*16*2);
 		lightSource.far = depth;
 		lightSource.viewportHeight = depth;
 		lightSource.viewportWidth = depth;
-		frameCounter = 0;
-		player = new Player(depth);
+		player.cam.far = depth;
 	}
 
 	private void buildChunks() {
@@ -100,7 +106,8 @@ public class World extends InputScreen {
 		cC.copyFrom(int3);
 		target.mod(CHUNK_SIZE);
 		cC.div(CHUNK_SIZE);
-		cb.chunk = chunkMap.get(cC);
+		if(cb.chunk == null || !cb.chunk.id.equals(cC))
+			cb.chunk = chunkMap.get(cC);
 		if(cb.chunk==null || !cb.chunk.built)
 			return null;
 		cb.block = cb.chunk.blocks[target.x][target.y][target.z];
@@ -109,9 +116,9 @@ public class World extends InputScreen {
 
 	private void updateWorldTime() {
 		lightSource.position.set(player.cam.position);
-		lightSource.position.y += depth / 2;
+		lightSource.position.y += depth/2;
 		lightSource.rotateAround(player.cam.position, Vector3.X, 10f);
-		lightSource.rotateAround(player.cam.position, Vector3.Z, 75f);
+		lightSource.rotateAround(player.cam.position, Vector3.Z, 65f);
 		lightSource.lookAt(player.cam.position);
 		lightSource.update();
 	}
@@ -129,7 +136,7 @@ public class World extends InputScreen {
 		}
 		for (int r = 0; r < Config.DRAW_DIST; r++) {
 			for (i.newLoop((-r), r); i.doneLoop(); i.cubeLoop()) {
-				if (i.x >= -3 && i.z >= -3) { // TODO - Remove this to render behind you.
+				if (i.x >= -2 && i.z >= -2) { // TODO - Remove this to render behind you.
 					target.setPlus(i, player.currentChunk);
 					if (target.y >= 0 && target.y < World.WORLD_VCHUNK &&
 						Math.abs(target.x) < 32768 &&
@@ -185,7 +192,7 @@ public class World extends InputScreen {
 
 	@Override
 	public void processKeysDown(IntSet keysDown) {
-
+		player.axisInput(2f,2f);
 	}
 
 	@Override
@@ -195,7 +202,7 @@ public class World extends InputScreen {
 
 	@Override
 	public void processTouchDown(IntMap<Int2> touch) {
-
+		player.axisInput(2f,2f);
 	}
 
 	@Override
@@ -211,7 +218,7 @@ public class World extends InputScreen {
 	@Override
 	public void run() {
 		player.update();
-		if(player.moved16()) {
+		if(player.moved32()) {
 			updateWorldTime();
 			updateVisible();
 			player.updateLastPosition();
@@ -230,5 +237,11 @@ public class World extends InputScreen {
 	public void dispose() {
 		world = null;
 		Chunk.dispose();
+	}
+
+	@Override
+	public void resize(int width, int height) {
+		player.cam.viewportWidth = width;
+		player.cam.viewportHeight = height;
 	}
 }

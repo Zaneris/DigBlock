@@ -26,11 +26,6 @@ public class Block {
 	private static final float dirt = Color.valueOf("573B0CFF").toFloatBits();
 	private static final float grass = Color.valueOf("007B0CFF").toFloatBits();
 
-	public void reset() {
-		blockType = -1;
-		visibleFaces = 0;
-	}
-
 	public boolean setFlag(byte flag) {
 		if(!hasFlag(flag)) {
 			visibleFaces = (byte) (visibleFaces | flag);
@@ -41,6 +36,7 @@ public class Block {
 
 	public void setBlockType(byte type) {
 		blockType = type;
+		visibleFaces = 0;
 		if(type!=AIR && type!=WATER)
 			setFlag(SOLID);
 	}

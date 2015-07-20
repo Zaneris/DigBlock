@@ -15,13 +15,12 @@ public class Player {
 	private Vector3 lastPosition;
 	public final Int3 currentChunk;
 
-	public Player(short depth) {
+	public Player() {
 		currentChunk = new Int3();
 		cam = new PerspectiveCamera(75f, Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-		cam.position.set(0f, 50f, 0f);
-		cam.lookAt(1f, 49f, 1f);
+		cam.position.set(0f, 35f, 0f);
+		cam.lookAt(1f, 34.5f, 1f);
 		cam.near = 1.0f;
-		cam.far = depth;
 	}
 
 	public void update() {
@@ -30,8 +29,8 @@ public class Player {
 		cam.update();
 	}
 
-	public boolean moved16() {
-		return (lastPosition == null || cam.position.dst2(lastPosition)>256);
+	public boolean moved32() {
+		return (lastPosition == null || cam.position.dst2(lastPosition)>1024);
 	}
 
 	public void updateLastPosition() {

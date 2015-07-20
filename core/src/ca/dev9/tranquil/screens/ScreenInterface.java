@@ -14,4 +14,9 @@ public interface ScreenInterface {
 	 * Should be used to nullify any references set on statics so the garbage collector can reclaim the memory.
 	 */
 	public void dispose();
+
+	/**
+	 * What to do when the resolution changes.
+	 */
+	public void resize(int width, int height);
 }

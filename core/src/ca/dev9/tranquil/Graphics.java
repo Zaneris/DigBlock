@@ -65,10 +65,12 @@ public final class Graphics {
 		assets.load("textures/Dirt.png", Texture.class, param);
 		assets.load("textures/GrassSide.png", Texture.class, param);
 		assets.load("textures/GrassTop.png", Texture.class, param);
-		frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888,2048,2048,true);
+		frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888,Config.DRAW_DIST*102,Config.DRAW_DIST*102,true);
 	}
 	
 	public static boolean checkAssets() {
+		if(textures!=null)
+			return true;
 		if (assets.update()) {
 			if(textures==null) {
 				textures = new ArrayList<>();
@@ -89,13 +91,16 @@ public final class Graphics {
 			Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
 			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 			Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
-			Gdx.gl.glDisable(GL20.GL_CULL_FACE);
+			Gdx.gl.glEnable(GL20.GL_CULL_FACE);
+			Gdx.gl.glCullFace(GL20.GL_BACK);
 			shaderDepth.begin();
 				shaderDepth.setUniformMatrix("u_LightMatrix", lightSource.combined);
 				for (ChunkMesh tR : meshSource)
 					if (tR.vertices > 0)
 						tR.render(shaderDepth);
 			shaderDepth.end();
+			Gdx.gl.glDisable(GL20.GL_CULL_FACE);
+			Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
 		frameBuffer.end();
 		return frameBuffer.getColorBufferTexture();
 	}
@@ -130,6 +135,7 @@ public final class Graphics {
 			shaderOut.setUniformf("u_LightVector", lightSource.direction);
 			bindTextures(shaderOut, depthMap);
 			shaderOut.setUniformf("u_Alpha", 1f);
+			shaderOut.setUniformf("u_Depth", 0.005f/Config.DRAW_DIST);
 		}
 		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
 		Gdx.gl.glCullFace(GL20.GL_BACK);

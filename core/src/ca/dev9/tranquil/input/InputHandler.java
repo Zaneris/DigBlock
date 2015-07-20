@@ -14,6 +14,7 @@ import java.util.ArrayList;
 public class InputHandler implements InputProcessor {
 	public static ArrayList<Input> inputObjects;
 	private int width, height;
+	private boolean touch = false;
 	private IntMap<Integer> keysDown;
 
 	public InputHandler() {
@@ -30,10 +31,12 @@ public class InputHandler implements InputProcessor {
 	}
 
 	public void processInput() {
-		if(World.world!=null) {
-			float x,y,rotX,rotY;
-
-		}
+		if(touch)
+			for(Input input:inputObjects)
+				input.processTouchDown(null);
+		if(keysDown.size>0)
+			for(Input input:inputObjects)
+				input.processTouchDown(null);
 	}
 
 	@Override
@@ -44,6 +47,7 @@ public class InputHandler implements InputProcessor {
 
 	@Override
 	public boolean keyUp(int keycode) {
+		keysDown.remove(keycode);
 		return true;
 	}
 
@@ -54,11 +58,13 @@ public class InputHandler implements InputProcessor {
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		touch = true;
 		return true;
 	}
 
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+		touch = false;
 		return true;
 	}
 
