@@ -3,7 +3,8 @@ package ca.dev9.tranquil.utils;
 import com.badlogic.gdx.math.Vector3;
 
 /**
- * Created by Zaneris on 03/07/2015.
+ * For 3 dimensional integer objects.
+ * @author Zaneris
  */
 public class Int3 {
 	public int x, y, z;
@@ -106,13 +107,20 @@ public class Int3 {
 		return x>value || y>value || z>value;
 	}
 
-	// Allow for easier to read code for all the 3D loops
+	/**
+	 * Simplify the code for 3D loops.
+	 * @param start Starting value for x, y, and z.
+	 * @param target Target value for x, y, and z.
+	 */
 	public void newLoop(int start, int target) {
 		set(start);
 		loopStart = start;
 		loopTarget = target;
 	}
 
+	/**
+	 * Iterate through a hollow 3D expanding cube.
+	 */
 	public void cubeLoop() {
 		if(y<loopTarget) {
 			if(Math.abs(z)==loopTarget || Math.abs(x)==loopTarget)
@@ -130,7 +138,9 @@ public class Int3 {
 		}
 	}
 
-	// Circle through the 3D loop
+	/**
+	 * Iterate through the 3D loop.
+	 */
 	public void loop() {
 		if(y<loopTarget) {
 			y++;
@@ -144,6 +154,10 @@ public class Int3 {
 		}
 	}
 
+	/**
+	 * Check if the loop has met its target.
+	 * @return Met target?
+	 */
 	public boolean doneLoop() {
 		return z<=loopTarget;
 	}

@@ -3,14 +3,21 @@ package ca.dev9.tranquil;
 import com.badlogic.gdx.Input;
 
 /**
- * Created by Zaneris on 14/07/2015.
+ * Config management.
+ * @author Zaneris
  */
 public final class Config {
 	public static final boolean DEBUG = true;
 	public static boolean WIREFRAME = false;
-	public static final boolean TEXTURES_ON = false;
 	public static boolean MOBILE;
-	public static byte DRAW_DIST = 20;
+	public static byte DRAW_DIST = 10;
+	
+	public static void load() {
+		if(MOBILE)
+			DRAW_DIST = 10;
+		else
+			DRAW_DIST = 20;
+	}
 
 	public static final class Keys {
 		public static int[] UP		= new int[] {Input.Keys.W, Input.Keys.UP};

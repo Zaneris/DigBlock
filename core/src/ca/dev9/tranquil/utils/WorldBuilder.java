@@ -10,10 +10,10 @@ import ca.dev9.tranquil.chunk.Chunk;
 public final class WorldBuilder {
 	private static final float 	TERRAIN_INTENSITY = 0.005f;
 	private static final float 	TERRAIN_INTENSITY2 = 0.015f;
-	private static final byte 	WATER_HEIGHT = 15;
+	private static final byte 	WATER_HEIGHT = 14;
 	private static final byte 	CHUNK_SIZE = Chunk.CHUNK_SIZE;
 	public static final byte 	WORLD_VCHUNK = 2;
-	public static final byte 	WORLD_VBLOCK = CHUNK_SIZE*WORLD_VCHUNK;
+	public static final byte 	WORLD_VBLOCK = CHUNK_SIZE*WORLD_VCHUNK-1;
 	private static final Int3 i = new Int3();
 
 	public static void buildChunk(Chunk chunk, double seed) {

@@ -6,6 +6,10 @@ import ca.dev9.tranquil.screens.ScreenInterface;
 import ca.dev9.tranquil.screens.World;
 import com.badlogic.gdx.ApplicationAdapter;
 
+/**
+ * Entry class into engine. Manages and executes all active screens.
+ * @author Zaneris
+ */
 public class ScreenManager extends ApplicationAdapter {
 	public static ScreenList<ScreenInterface> screens;
 	public static InputHandler input;
@@ -18,6 +22,7 @@ public class ScreenManager extends ApplicationAdapter {
 	public void create () {
 		Graphics.loadShaders();
 		Graphics.loadAssets();
+		Config.load();
 		screens = new ScreenList<>();
 		input = new InputHandler();
 		screens.add(new World());

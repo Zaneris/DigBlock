@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.Color;
  * Created by Zaneris on 29/06/2015.
  */
 public class Block {
-	private byte visibleFaces;
+	private byte visibleFaces = 0;
 	public static final byte SOLID       = 0b0100_0000;
 	public static final byte FACE_TOP    = 0b0010_0000;
 	public static final byte FACE_BOTTOM = 0b0001_0000;

@@ -1,7 +1,8 @@
 package ca.dev9.tranquil.utils;
 
 /**
- * Created by Zaneris on 14/07/2015.
+ * For 2 dimensional integer objects.
+ * @author Zaneris
  */
 public class Int2 {
 	int x;

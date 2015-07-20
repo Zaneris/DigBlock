@@ -16,7 +16,7 @@ public class Chunk {
 	 */
 	public static final byte CHUNK_SIZE = 16;
 	private static final Int3 i = new Int3();
-	private static final ChunkBlock cb = new ChunkBlock();
+	private static ChunkBlock chunkBlock;
 	public final Int3 id = new Int3();
 	public final Int3 position = new Int3();
 	public final Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
@@ -43,6 +43,8 @@ public class Chunk {
 						blocks[x][y][z] = new Block();
 					else blocks[x][y][z].reset();
 				}
+		if(chunkBlock ==null)
+			chunkBlock = new ChunkBlock();
 	}
 
 	public void createBlock(byte type, Int3 location) {
@@ -94,9 +96,9 @@ public class Chunk {
 	public ChunkBlock getBlock(int x, int y, int z) {
 		if(x<0 || y<0 || z<0 || x>15 || y>15 || z>15)
 			return World.world.getBlock(x + position.x, y + position.y, z + position.z);
-		cb.chunk = this;
-		cb.block = blocks[x][y][z];
-		return cb;
+		chunkBlock.chunk = this;
+		chunkBlock.block = blocks[x][y][z];
+		return chunkBlock;
 	}
 
 	public ChunkBlock getBlock(Int3 int3) {
@@ -104,26 +106,19 @@ public class Chunk {
 	}
 
 	public void updateFaces() {
-		ChunkBlock cb1;
-		ChunkBlock cb2;
+		ChunkBlock cb = new ChunkBlock();
 		for (i.newLoop(0, 15); i.doneLoop(); i.loop()) {
-			cb1 = getBlock(i);
-			cb2 = getBlock(i.x + 1, i.y, i.z);
-			setFlags(Block.FACE_EAST, Block.FACE_WEST, cb1, cb2);
-			cb2 = getBlock(i.x - 1, i.y, i.z);
-			setFlags(Block.FACE_WEST, Block.FACE_EAST, cb1, cb2);
-			cb2 = getBlock(i.x, i.y, i.z + 1);
-			setFlags(Block.FACE_SOUTH, Block.FACE_NORTH, cb1, cb2);
-			cb2 = getBlock(i.x, i.y, i.z - 1);
-			setFlags(Block.FACE_NORTH, Block.FACE_SOUTH, cb1, cb2);
-			cb2 = getBlock(i.x, i.y - 1, i.z);
-			setFlags(Block.FACE_TOP, Block.FACE_BOTTOM, cb1, cb2);
-			cb2 = getBlock(i.x, i.y + 1, i.z);
-			setFlags(Block.FACE_BOTTOM, Block.FACE_TOP, cb1, cb2);
+			cb.copyFrom(getBlock(i));
+			setFlags(Block.FACE_EAST, Block.FACE_WEST, cb, getBlock(i.x + 1, i.y, i.z));
+			setFlags(Block.FACE_WEST, Block.FACE_EAST, cb, getBlock(i.x - 1, i.y, i.z));
+			setFlags(Block.FACE_SOUTH,Block.FACE_NORTH,cb, getBlock(i.x, i.y, i.z + 1));
+			setFlags(Block.FACE_NORTH,Block.FACE_SOUTH,cb, getBlock(i.x, i.y, i.z - 1));
+			setFlags(Block.FACE_TOP,Block.FACE_BOTTOM, cb, getBlock(i.x, i.y - 1, i.z));
+			setFlags(Block.FACE_BOTTOM,Block.FACE_TOP, cb, getBlock(i.x, i.y + 1, i.z));
 		}
 	}
 	
-	private static void setFlags(byte face1, byte face2, ChunkBlock cb1, ChunkBlock cb2) {
+	private void setFlags(byte face1, byte face2, ChunkBlock cb1, ChunkBlock cb2) {
 		if(cb2!=null) {
 			if (cb1.block.blockType != Block.WATER || cb2.block.blockType != Block.WATER) {
 				boolean solid1 = cb1.block.hasFlag(Block.SOLID) ||
@@ -136,5 +131,9 @@ public class Chunk {
 				if (solid1) cb1.setFlag(solid2, face2);
 			}
 		}
+	}
+
+	public static void dispose() {
+		chunkBlock = null;
 	}
 }

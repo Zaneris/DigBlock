@@ -3,11 +3,8 @@ package ca.dev9.tranquil.screens;
 import ca.dev9.tranquil.Config;
 import ca.dev9.tranquil.Graphics;
 import ca.dev9.tranquil.chunk.*;
-import ca.dev9.tranquil.input.Input;
 import ca.dev9.tranquil.Player;
-import ca.dev9.tranquil.blocks.Block;
 import ca.dev9.tranquil.utils.*;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector3;
@@ -15,8 +12,6 @@ import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.IntSet;
 
 import java.util.ArrayList;
-import java.lang.annotation.*;
-import java.security.*;
 
 /**
  * The world!
@@ -234,5 +229,6 @@ public class World extends InputScreen {
 	@Override
 	public void dispose() {
 		world = null;
+		Chunk.dispose();
 	}
 }
