@@ -21,19 +21,35 @@ vec3 rgb (int i) {
 	else return texture2D(u_GrassTop, v_DiffuseUV).rgb;
 }
 
-bool depthChk() {
-	float bias = 0.002;
-	vec4 rgba = texture2D(u_DepthMap, v_DepthMap);
+float depthChk(vec2 xy) {
+	float bias = 0.0021;
+	vec4 rgba = texture2D(u_DepthMap, xy);
 	if(v_Height+bias<rgba.r)
-		return true;
-	else return false;
+		return 0.0;
+	else return 0.4;
+}
+
+float avgDepth() {
+	float bias = 0.0001;
+	float bias2= 0.00014;
+	float toReturn = depthChk(v_DepthMap);
+	toReturn += depthChk(vec2(v_DepthMap.x+bias,v_DepthMap.y));
+	toReturn += depthChk(vec2(v_DepthMap.x-bias,v_DepthMap.y));
+	toReturn += depthChk(vec2(v_DepthMap.x,v_DepthMap.y+bias));
+	toReturn += depthChk(vec2(v_DepthMap.x,v_DepthMap.y-bias));
+	toReturn += depthChk(vec2(v_DepthMap.x+bias2,v_DepthMap.y+bias2));
+	toReturn += depthChk(vec2(v_DepthMap.x+bias2,v_DepthMap.y-bias2));
+	toReturn += depthChk(vec2(v_DepthMap.x-bias2,v_DepthMap.y+bias2));
+	toReturn += depthChk(vec2(v_DepthMap.x-bias2,v_DepthMap.y-bias2));
+	toReturn /= 9.0;
+	return 0.6 + toReturn;
 }
 
 void main() {
 	vec3 final;
 	float avgLight;
-	if(v_Light>=0.6 && depthChk()) {
-		avgLight = v_Light*0.5;
+	if(v_Light>=0.6) {
+		avgLight = v_Light*avgDepth();
 	} else {
 		avgLight = v_Light;
 	}
