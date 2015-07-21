@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.IntSet;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * The world!
@@ -55,7 +56,7 @@ public class World extends InputScreen {
 		curWireframe = Config.WIREFRAME;
 		lightSource = new OrthographicCamera();
 		lightSource.near = 1.0f;
-		frameCounter = 0;
+		frameCounter = FPC;
 		player = new Player();
 		updateDepth();
 	}
@@ -117,7 +118,7 @@ public class World extends InputScreen {
 	private void updateWorldTime() {
 		lightSource.position.set(player.cam.position);
 		lightSource.position.y += depth/2;
-		lightSource.rotateAround(player.cam.position, Vector3.Z, -75f);
+		lightSource.rotateAround(player.cam.position, Vector3.Z, 75f);
 		lightSource.lookAt(player.cam.position);
 		lightSource.update();
 	}
@@ -135,13 +136,11 @@ public class World extends InputScreen {
 		}
 		for (int r = 0; r < Config.DRAW_DIST; r++) {
 			for (i.newLoop((-r), r); i.doneLoop(); i.cubeLoop()) {
-				if (i.x >= -2 && i.z >= -2) { // TODO - Remove this to render behind you.
+				if (i.x >= -3 && i.z >= -3) { // TODO - Remove this to render behind you.
 					target.setPlus(i, player.currentChunk);
-					if (target.y >= 0 && target.y < World.WORLD_VCHUNK &&
-						Math.abs(target.x) < 32768 &&
-						Math.abs(target.z) < 32768) {
+					if (target.y >= 0 && target.y < World.WORLD_VCHUNK) {
 						if (player.currentChunk.distance(target) < Config.DRAW_DIST) {
-							chunk = oldMap.get(target.x, target.y, target.z);
+							chunk = oldMap.remove(target);
 							if (chunk == null) {
 								if (buildQueue.size() <= 10) {
 									if (garbage.isEmpty())
@@ -150,7 +149,7 @@ public class World extends InputScreen {
 										chunk = garbage.get(0);
 										garbage.remove(0);
 									}
-									chunk.set(target.x, target.y, target.z);
+									chunk.set(target);
 									buildQueue.add(chunk);
 									chunkMap.add(chunk);
 								}
@@ -162,7 +161,6 @@ public class World extends InputScreen {
 								if (chunk.hasTransMesh())
 									transMeshes.add(chunk.transMesh);
 								chunkMap.add(chunk);
-								oldMap.remove(chunk.hashCode());
 							}
 						}
 					}
@@ -174,16 +172,6 @@ public class World extends InputScreen {
 			garbage.add(tR);
 		}
 		oldMap.clear();
-		depthMap = Graphics.updateDepthMap(lightSource,solidMeshes);
-	}
-
-	private boolean checkFrameCounter() {
-		frameCounter++;
-		if(frameCounter>=FPC) {
-			frameCounter = 0;
-			return true;
-		}
-		return false;
 	}
 
 	@Override
@@ -214,18 +202,19 @@ public class World extends InputScreen {
 	@Override
 	public void run() {
 		player.update();
-		if(player.moved32()) {
-			updateWorldTime();
-			updateVisible();
-			player.updateLastPosition();
+		frameCounter++;
+		if(frameCounter>=FPC) {
 			frameCounter = 0;
-		} else if (checkFrameCounter()) {
 			updateVisible();
-		}
-		switch(frameCounter%3) {
-			case 0: buildChunks(); break;
-			case 1: updateFaces(); break;
-			case 2: createMeshes();
+			if(player.moved32()) {
+				updateWorldTime();
+				player.updateLastPosition();
+			}
+			depthMap = Graphics.updateDepthMap(lightSource,solidMeshes);
+		} else switch(frameCounter%3) {
+			case 0: createMeshes(); break;
+			case 1: buildChunks(); break;
+			case 2: updateFaces();
 		}
 		Graphics.renderChunks(player.cam, lightSource, solidMeshes, transMeshes, depthMap);
 	}

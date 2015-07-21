@@ -79,11 +79,11 @@ public class Chunk {
 		return generateHash(id.x, id.y, id.z);
 	}
 
-	public static int generateHash(int x, int y, int z) {
-		return generateHash((short)x, (short)y, (short)z);
+	public static int generateHash(Int3 int3) {
+		return generateHash(int3.x,int3.y,int3.z);
 	}
 
-	public static int generateHash(short x, short y, short z) {
+	public static int generateHash(int x, int y, int z) {
 		return (y*521 + x)*31963 + z;
 	}
 	
@@ -99,16 +99,13 @@ public class Chunk {
 		Block b;
 		for (i.newLoop(0, 15); i.doneLoop(); i.loop()) {
 			b = blocks[i.x][i.y][i.z];
+			if(i.x==0) setFlags(Block.FACE_WEST, Block.FACE_EAST, b, getChunkBlock(i.x - 1, i.y, i.z));
+			if(i.y==0) setFlags(Block.FACE_TOP,Block.FACE_BOTTOM, b, getChunkBlock(i.x, i.y - 1, i.z));
+			if(i.z==0) setFlags(Block.FACE_NORTH,Block.FACE_SOUTH,b, getChunkBlock(i.x, i.y, i.z - 1));
 			if(i.x==15) setFlags(Block.FACE_EAST, Block.FACE_WEST, b, getChunkBlock(i.x+1, i.y, i.z));
 			else setFlags(Block.FACE_EAST, Block.FACE_WEST, b, blocks[i.x+1][i.y][i.z]);
-			if(i.x==0) setFlags(Block.FACE_WEST, Block.FACE_EAST, b, getChunkBlock(i.x - 1, i.y, i.z));
-			else setFlags(Block.FACE_WEST, Block.FACE_EAST, b, blocks[i.x-1][i.y][i.z]);
 			if(i.z==15) setFlags(Block.FACE_SOUTH,Block.FACE_NORTH,b, getChunkBlock(i.x, i.y, i.z + 1));
 			else setFlags(Block.FACE_SOUTH,Block.FACE_NORTH, b, blocks[i.x][i.y][i.z+1]);
-			if(i.z==0) setFlags(Block.FACE_NORTH,Block.FACE_SOUTH,b, getChunkBlock(i.x, i.y, i.z - 1));
-			else setFlags(Block.FACE_NORTH,Block.FACE_SOUTH, b, blocks[i.x][i.y][i.z-1]);
-			if(i.y==0) setFlags(Block.FACE_TOP,Block.FACE_BOTTOM, b, getChunkBlock(i.x, i.y - 1, i.z));
-			else setFlags(Block.FACE_TOP,Block.FACE_BOTTOM, b, blocks[i.x][i.y-1][i.z]);
 			if(i.y==15) setFlags(Block.FACE_BOTTOM,Block.FACE_TOP, b, getChunkBlock(i.x, i.y + 1, i.z));
 			else setFlags(Block.FACE_BOTTOM,Block.FACE_TOP, b, blocks[i.x][i.y+1][i.z]);
 		}

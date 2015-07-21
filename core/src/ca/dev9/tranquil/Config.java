@@ -14,7 +14,7 @@ public final class Config {
 	
 	public static void load() {
 		if(MOBILE)
-			DRAW_DIST = 12;
+			DRAW_DIST = 10;
 		else
 			DRAW_DIST = 20;
 	}

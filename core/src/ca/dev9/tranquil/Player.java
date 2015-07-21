@@ -18,8 +18,8 @@ public class Player {
 	public Player() {
 		currentChunk = new Int3();
 		cam = new PerspectiveCamera(75f, Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-		cam.position.set(0f, 35f, 0f);
-		cam.lookAt(1f, 34.5f, 1f);
+		cam.position.set(0f, 33f, 0f);
+		cam.lookAt(100f, 16f, 100f);
 		cam.near = 1.0f;
 	}
 
