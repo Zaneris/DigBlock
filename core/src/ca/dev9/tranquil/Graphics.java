@@ -35,6 +35,7 @@ public final class Graphics {
 	}
 
 	public static void loadShaders() {
+		ShaderProgram.pedantic = false;
 		shaderTex = new ShaderProgram(
 				getShader("shaders/VertTex.glsl"),
 				getShader("shaders/FragTex.glsl"));
@@ -135,7 +136,6 @@ public final class Graphics {
 			shaderOut.setUniformf("u_LightVector", lightSource.direction);
 			bindTextures(shaderOut, depthMap);
 			shaderOut.setUniformf("u_Alpha", 1f);
-			shaderOut.setUniformf("u_Depth", 0.005f/Config.DRAW_DIST);
 		}
 		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
 		Gdx.gl.glCullFace(GL20.GL_BACK);

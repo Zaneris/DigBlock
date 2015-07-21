@@ -20,7 +20,7 @@ import java.util.ArrayList;
  */
 public class World extends InputScreen {
 	public static World world;
-	private static final byte FPC = 10; // Frames per cycle
+	private static final byte FPC = 30; // Frames per cycle
 	private static final byte CHUNK_SIZE = Chunk.CHUNK_SIZE;
 	private static final byte WORLD_VCHUNK = WorldBuilder.WORLD_VCHUNK;
 	private static final byte WORLD_VBLOCK = WorldBuilder.WORLD_VBLOCK;
@@ -117,8 +117,7 @@ public class World extends InputScreen {
 	private void updateWorldTime() {
 		lightSource.position.set(player.cam.position);
 		lightSource.position.y += depth/2;
-		lightSource.rotateAround(player.cam.position, Vector3.X, 10f);
-		lightSource.rotateAround(player.cam.position, Vector3.Z, 65f);
+		lightSource.rotateAround(player.cam.position, Vector3.Z, -75f);
 		lightSource.lookAt(player.cam.position);
 		lightSource.update();
 	}
@@ -144,7 +143,7 @@ public class World extends InputScreen {
 						if (player.currentChunk.distance(target) < Config.DRAW_DIST) {
 							chunk = oldMap.get(target.x, target.y, target.z);
 							if (chunk == null) {
-								if (buildQueue.size() < FPC) {
+								if (buildQueue.size() <= 10) {
 									if (garbage.isEmpty())
 										chunk = new Chunk();
 									else {
@@ -175,9 +174,6 @@ public class World extends InputScreen {
 			garbage.add(tR);
 		}
 		oldMap.clear();
-		buildChunks();
-		updateFaces();
-		createMeshes();
 		depthMap = Graphics.updateDepthMap(lightSource,solidMeshes);
 	}
 
@@ -225,10 +221,11 @@ public class World extends InputScreen {
 			frameCounter = 0;
 		} else if (checkFrameCounter()) {
 			updateVisible();
-		} else {
-			buildChunks();
-			updateFaces();
-			createMeshes();
+		}
+		switch(frameCounter%3) {
+			case 0: buildChunks(); break;
+			case 1: updateFaces(); break;
+			case 2: createMeshes();
 		}
 		Graphics.renderChunks(player.cam, lightSource, solidMeshes, transMeshes, depthMap);
 	}

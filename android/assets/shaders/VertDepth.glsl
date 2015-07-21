@@ -1,9 +1,8 @@
 attribute vec3 a_Position;
 uniform mat4 u_LightMatrix;
-varying float v_DistToLight;
+varying float v_Height;
 
 void main() {
-	vec4 matrix = u_LightMatrix * vec4(a_Position, 1.0);
-	v_DistToLight = (matrix.z+1.0)*2.0;
-	gl_Position = matrix;
+	v_Height = a_Position.y/256.0;
+	gl_Position = u_LightMatrix * vec4(a_Position, 1.0);
 }
