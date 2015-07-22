@@ -46,13 +46,6 @@ float avgDepth() {
 }
 
 void main() {
-	vec3 final;
-	float avgLight;
-	if(v_Light>=0.6) {
-		avgLight = v_Light*avgDepth();
-	} else {
-		avgLight = v_Light;
-	}
-	gl_FragColor.rgb = rgb(int(v_Tex))*avgLight;
+	gl_FragColor.rgb = v_Light*avgDepth()*rgb(int(v_Tex));
 	gl_FragColor.a = u_Alpha;
 }

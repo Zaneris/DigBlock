@@ -31,7 +31,7 @@ void main() {
 	v_DiffuseUV = texCoords(int(i));
 	float normData = (a_TexNormal-i)/4.0;
 	i = mod(normData,6.0);
-	v_Light = max(dot(normal(int(i)), -u_LightVector), 0.0) + 0.5;
+	v_Light = max(dot(normal(int(i)), -u_LightVector), 0.5)+0.2;
 	v_Tex = (normData-i)/6.0;
 	vec4 matrix = u_LightMatrix * vec4(a_Position, 1.0);
 	v_DepthMap = matrix.xy*0.5+0.5;
