@@ -15,7 +15,7 @@ import java.security.*;
  */
 public class Player {
 	public PerspectiveCamera cam;
-	private Vector3 lastPosition,tmp,out;
+	private Vector3 lastPosition,tmp,tmp2,out;
 	private Vector2 move,rot;
 	private byte rotCount = 0;
 	public final Int3 currentChunk;
@@ -23,6 +23,7 @@ public class Player {
 	public Player() {
 		currentChunk = new Int3();
 		tmp = new Vector3();
+		tmp2 = new Vector3();
 		out = new Vector3();
 		move = new Vector2();
 		rot = new Vector2();
@@ -83,9 +84,17 @@ public class Player {
 	
 	private void rotateCam() {
 		if(rotCount>0) {
+			tmp2.set(cam.direction);
 			cam.direction.rotate(cam.up, rot.x);
-			tmp.set(cam.direction).crs(cam.up).nor();
-			cam.direction.rotate(tmp, rot.y);
+			float temp = rot.y/360f+cam.direction.y;
+			if(temp>-0.9999999f && temp<0.9999999f) {
+				tmp.set(cam.direction).crs(cam.up).nor();
+				cam.direction.rotate(tmp, rot.y);
+			} else if (cam.direction.y < 0f) {
+				cam.direction.y = -0.9999999f;
+			} else {
+				cam.direction.y =  0.9999999f;
+			}
 			rotCount--;
 		}
 	}
