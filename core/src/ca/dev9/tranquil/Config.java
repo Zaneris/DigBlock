@@ -9,6 +9,7 @@ import com.badlogic.gdx.Input;
 public final class Config {
 	public static final boolean DEBUG = true;
 	public static boolean WIREFRAME = false;
+	public static final float GRAVITY = 9.8f;
 	public static boolean MOBILE;
 	public static byte DRAW_DIST;
 	
@@ -26,6 +27,7 @@ public final class Config {
 		public static int[] RIGHT	= new int[] {Input.Keys.D, Input.Keys.RIGHT};
 		public static int[] RUN		= new int[] {Input.Keys.SHIFT_LEFT, Input.Keys.SHIFT_RIGHT};
 		public static int[] XRAY	= new int[] {Input.Keys.X, -1};
+		public static int[] JUMP	= new int[] {Input.Keys.SPACE, -1};
 		public static int[] QUIT	= new int[] {Input.Keys.ESCAPE, Input.Keys.BACK};
 	}
 }

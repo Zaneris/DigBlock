@@ -200,6 +200,8 @@ public class World extends InputScreen {
 				player.axisX(-1f);
 			} else if (key==Config.Keys.RIGHT[0] || key==Config.Keys.RIGHT[1]) {
 				player.axisX(1f);
+			} else if (key==Config.Keys.JUMP[0] || key==Config.Keys.JUMP[1]) {
+				player.jump = true;
 			} else if (key==Config.Keys.QUIT[0] || key==Config.Keys.QUIT[1]) {
 				Gdx.app.exit();
 			}
@@ -222,6 +224,7 @@ public class World extends InputScreen {
 			if(value.x < InputHandler.vWidth/2) {
 				player.axisInput(-deltaX/200f,deltaY/200f);
 			} else {
+				player.jumpCount();
 				if(player.setRot(deltaX,deltaY)) {
 					value.x = xy.x;
 					value.y = xy.y;
