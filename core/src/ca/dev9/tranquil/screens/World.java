@@ -154,16 +154,7 @@ public class World extends InputScreen {
 						chunk = oldMap.remove(target);
 						inFrustum = player.cam.frustum.sphereInFrustumWithoutNearFar(
 								target.x*16+8, target.y*16+8, target.z*16+8, 13.86f);
-						if (chunk == null) {
-							if (inFrustum && buildQueue.size() <= 10) {
-								if (garbage.isEmpty())
-									chunk = new Chunk();
-								else chunk = garbage.remove(0);
-								chunk.set(target);
-								buildQueue.add(chunk);
-								chunkMap.add(chunk);
-							}
-						} else {
+						if(chunk!=null) {
 							if (inFrustum) {
 								if (wireChange)
 									ChunkMeshGenerator.createMesh(chunk);
@@ -173,6 +164,15 @@ public class World extends InputScreen {
 									transMeshes.add(chunk.transMesh);
 							}
 							chunkMap.add(chunk);
+						} else if (buildQueue.size() < 10) {
+							if(inFrustum || r<2) {
+								if (garbage.isEmpty())
+									chunk = new Chunk();
+								else chunk = garbage.remove(0);
+								chunk.set(target);
+								buildQueue.add(chunk);
+								chunkMap.add(chunk);
+							}
 						}
 					}
 				}
@@ -239,19 +239,20 @@ public class World extends InputScreen {
 	}
 
 	@Override
-	public void run() {
-		player.move();
+	public void run(float deltaTime) {
+		player.move(deltaTime);
 		player.update();
 		frameCounter++;
 		if(frameCounter>=FPC) {
 			frameCounter = 0;
 			updateVisible();
+			boolean clear = false;
 			if(player.moved32()) {
 				updateWorldTime();
 				player.updateLastPosition();
-				depthMap = Graphics.updateDepthMap(lightSource,solidMeshes,true);
-			} else 
-				depthMap = Graphics.updateDepthMap(lightSource,solidMeshes,false);
+				clear = true;
+			}
+			depthMap = Graphics.updateDepthMap(lightSource,solidMeshes,chunkMap,clear);
 		} else switch(frameCounter%3) {
 			case 0: createMeshes(); break;
 			case 1: buildChunks(); break;

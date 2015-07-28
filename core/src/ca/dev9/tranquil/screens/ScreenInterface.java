@@ -8,7 +8,7 @@ public interface ScreenInterface {
 	/**
 	 * Render the screen.
 	 */
-	public void run();
+	public void run(float deltaTime);
 	
 	/**
 	 * Should be used to nullify any references set on statics so the garbage collector can reclaim the memory.

@@ -5,6 +5,7 @@ import ca.dev9.tranquil.screens.ScreenList;
 import ca.dev9.tranquil.screens.ScreenInterface;
 import ca.dev9.tranquil.screens.World;
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
 
 /**
  * Entry class into engine. Manages and executes all active screens.
@@ -33,7 +34,7 @@ public class ScreenManager extends ApplicationAdapter {
 		input.processInput();
 		if(Graphics.checkAssets())
 			for(ScreenInterface screen:screens)
-				screen.run();
+				screen.run(Gdx.graphics.getDeltaTime());
 	}
 
 	@Override

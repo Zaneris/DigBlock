@@ -1,5 +1,7 @@
 package ca.dev9.tranquil;
 
+import ca.dev9.tranquil.chunk.Chunk;
+import ca.dev9.tranquil.chunk.ChunkMap;
 import ca.dev9.tranquil.chunk.ChunkMesh;
 import ca.dev9.tranquil.screens.World;
 import com.badlogic.gdx.Gdx;
@@ -13,6 +15,8 @@ import com.badlogic.gdx.graphics.glutils.VertexBufferObject;
 import com.badlogic.gdx.graphics.glutils.VertexData;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.IntMap;
+
 import java.util.ArrayList;
 
 /**
@@ -88,7 +92,7 @@ public final class Graphics {
 		return false;
 	}
 
-	public static Texture updateDepthMap(Camera lightSource, ArrayList<ChunkMesh> meshSource, boolean clear) {
+	public static Texture updateDepthMap(Camera lightSource, ArrayList<ChunkMesh> meshSource, ChunkMap<Chunk> chunkMap, boolean clear) {
 		frameBuffer.begin();
 		if(clear) {
 			Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
@@ -99,7 +103,14 @@ public final class Graphics {
 		Gdx.gl.glCullFace(GL20.GL_BACK);
 			shaderDepth.begin();
 				shaderDepth.setUniformMatrix("u_LightMatrix", lightSource.combined);
-				for (ChunkMesh tR : meshSource)
+				if(clear) {
+					Chunk chunk;
+					for(IntMap.Entry entry:chunkMap) {
+						chunk = (Chunk)entry.value;
+						if (chunk.built && chunk.hasSolidMesh())
+							chunk.solidMesh.render(shaderDepth);
+					}
+				} else for (ChunkMesh tR : meshSource)
 					if (tR.vertices > 0)
 						tR.render(shaderDepth);
 			shaderDepth.end();

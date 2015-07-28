@@ -15,7 +15,7 @@ import java.security.*;
  */
 public class Player {
 	public PerspectiveCamera cam;
-	private Vector3 lastPosition,tmp,tmp2,out;
+	private Vector3 lastPosition,tmp,out;
 	private Vector2 move,rot;
 	private byte rotCount = 0;
 	public final Int3 currentChunk;
@@ -23,10 +23,9 @@ public class Player {
 	public Player() {
 		currentChunk = new Int3();
 		tmp = new Vector3();
-		tmp2 = new Vector3();
 		out = new Vector3();
-		move = new Vector2();
 		rot = new Vector2();
+		move = new Vector2();
 		cam = new PerspectiveCamera(75f, Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		cam.position.set(0f, 33f, 0f);
 		cam.lookAt(100f, 33f, 0f);
@@ -62,10 +61,9 @@ public class Player {
 		move.y = y;
 	}
 	
-	public void move() {
+	public void move(float dT) {
 		if(move.len()>1.0)
 			move.nor();
-		float dT = Gdx.graphics.getDeltaTime();
 		out.set(cam.direction).nor().scl(move.y*3.0f*dT);
 		tmp.set(cam.direction).crs(cam.up).nor().scl(move.x*3.0f*dT);
 		out.add(tmp);
@@ -84,16 +82,15 @@ public class Player {
 	
 	private void rotateCam() {
 		if(rotCount>0) {
-			tmp2.set(cam.direction);
 			cam.direction.rotate(cam.up, rot.x);
 			float temp = rot.y/360f+cam.direction.y;
-			if(temp>-0.9999999f && temp<0.9999999f) {
+			if(temp>-1f && temp<1f) {
 				tmp.set(cam.direction).crs(cam.up).nor();
 				cam.direction.rotate(tmp, rot.y);
 			} else if (cam.direction.y < 0f) {
-				cam.direction.y = -0.9999999f;
+				cam.direction.y = -1f;
 			} else {
-				cam.direction.y =  0.9999999f;
+				cam.direction.y =  1f;
 			}
 			rotCount--;
 		}
