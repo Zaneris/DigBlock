@@ -141,6 +141,7 @@ public class World extends InputScreen {
 		chunkMap.clear();
 		Chunk chunk;
 		boolean wireChange = false;
+		boolean inFrustum;
 		if(curWireframe!=Config.WIREFRAME) {
 			Config.WIREFRAME = !Config.WIREFRAME;
 			wireChange = true;
@@ -151,8 +152,10 @@ public class World extends InputScreen {
 				if (target.y >= 0 && target.y < World.WORLD_VCHUNK) {
 					if (player.currentChunk.distance(target) < Config.DRAW_DIST) {
 						chunk = oldMap.remove(target);
+						inFrustum = player.cam.frustum.sphereInFrustumWithoutNearFar(
+								target.x*16+8, target.y*16+8, target.z*16+8, 13.86f);
 						if (chunk == null) {
-							if (buildQueue.size() <= 10) {
+							if (inFrustum && buildQueue.size() <= 10) {
 								if (garbage.isEmpty())
 									chunk = new Chunk();
 								else chunk = garbage.remove(0);
@@ -161,8 +164,7 @@ public class World extends InputScreen {
 								chunkMap.add(chunk);
 							}
 						} else {
-							if (player.cam.frustum.sphereInFrustumWithoutNearFar(
-									target.x * 16 + 8, target.y * 16 + 8, target.z * 16 + 8, 13.86f)) {
+							if (inFrustum) {
 								if (wireChange)
 									ChunkMeshGenerator.createMesh(chunk);
 								if (chunk.hasSolidMesh())

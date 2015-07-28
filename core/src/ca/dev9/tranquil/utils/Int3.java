@@ -184,8 +184,8 @@ public class Int3 {
 		return new Int3(x,y,z);
 	}
 
-	public int distance(Int3 int3) {
-		return (int)Math.round(Math.sqrt(((x-int3.x)*(x-int3.x))+((y-int3.y)*(y-int3.y))+((z-int3.z)*(z-int3.z))));
+	public double distance(Int3 int3) {
+		return Math.sqrt(((x-int3.x)*(x-int3.x))+((y-int3.y)*(y-int3.y))+((z-int3.z)*(z-int3.z)));
 	}
 
 	@Override

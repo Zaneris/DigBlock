@@ -65,8 +65,8 @@ public class Player {
 		if(move.len()>1.0)
 			move.nor();
 		float dT = Gdx.graphics.getDeltaTime();
-		out.set(cam.direction).nor().scl(move.y*9.0f*dT);
-		tmp.set(cam.direction).crs(cam.up).nor().scl(move.x*9.0f*dT);
+		out.set(cam.direction).nor().scl(move.y*3.0f*dT);
+		tmp.set(cam.direction).crs(cam.up).nor().scl(move.x*3.0f*dT);
 		out.add(tmp);
 		cam.position.add(out);
 		move.setZero();
