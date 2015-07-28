@@ -84,24 +84,24 @@ public class World extends InputScreen {
 		}
 	}
 
-	private void createMeshes() {
+	private void updateFaces() {
 		Chunk chunk;
-		for(int i = 0; i < meshQueue.size(); i++) {
-			chunk = meshQueue.remove(i);
-			if(!chunk.garbage) {
-				ChunkMeshGenerator.createMesh(chunk);
-				chunk.wait = false;
+		for(int i = 0; i < faceQueue.size(); i++) {
+			chunk = faceQueue.remove(i);
+			if(!chunk.garbage && chunk.built) {
+				chunk.updateFaces();
 				return;
 			}
 		}
 	}
 
-	private void updateFaces() {
+	private void createMeshes() {
 		Chunk chunk;
-		for(int i = 0; i < faceQueue.size(); i++) {
-			chunk = faceQueue.remove(i);
-			if(!chunk.garbage) {
-				chunk.updateFaces();
+		for(int i = 0; i < meshQueue.size(); i++) {
+			chunk = meshQueue.remove(i);
+			if(!chunk.garbage && chunk.built && chunk.wait) {
+				ChunkMeshGenerator.createMesh(chunk);
+				chunk.wait = false;
 				return;
 			}
 		}

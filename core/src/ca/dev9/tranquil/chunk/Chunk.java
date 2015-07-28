@@ -17,7 +17,6 @@ public class Chunk {
 	 */
 	public static final byte CHUNK_SIZE = 16;
 	private static final Int3 i = new Int3();
-	private static ChunkBlock chunkBlock;
 	public final Int3 id = new Int3();
 	public final Int3 position = new Int3();
 	public final Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
@@ -36,11 +35,7 @@ public class Chunk {
 		id.set(x,y,z);
 		position.set(x, y, z);
 		position.mult(CHUNK_SIZE);
-		wait = false;
-		built = false;
 		garbage = false;
-		if(chunkBlock ==null)
-			chunkBlock = new ChunkBlock();
 	}
 
 	public void createBlock(byte type, Int3 l) {
@@ -67,6 +62,9 @@ public class Chunk {
 	public void reset() {
 		if(solidMesh!=null) solidMesh.reset();
 		if(transMesh!=null) transMesh.reset();
+		garbage = true;
+		wait = false;
+		built = false;
 	}
 
 	@Override
@@ -146,6 +144,6 @@ public class Chunk {
 	}
 
 	public static void dispose() {
-		chunkBlock = null;
+
 	}
 }
