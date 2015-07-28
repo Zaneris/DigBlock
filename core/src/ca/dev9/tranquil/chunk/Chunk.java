@@ -4,6 +4,7 @@ import ca.dev9.tranquil.blocks.Block;
 import ca.dev9.tranquil.screens.World;
 import ca.dev9.tranquil.utils.Int3;
 import ca.dev9.tranquil.utils.ChunkBlock;
+import ca.dev9.tranquil.utils.WorldBuilder;
 
 /**
  * Storage container object for blocks and renderable meshes.
@@ -20,11 +21,12 @@ public class Chunk {
 	public final Int3 id = new Int3();
 	public final Int3 position = new Int3();
 	public final Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
-	// TODO - Switch to non 3 dimensional array.
+	private static final Block airBlock = new Block();
 	public ChunkMesh solidMesh;
 	public ChunkMesh transMesh;
-	public boolean wait; // Awaiting new Mesh
-	public boolean built;
+	public boolean wait = false; // Awaiting new Mesh
+	public boolean built = false;
+	public boolean garbage = true;
 
 	public void set(Int3 int3) {
 		set(int3.x, int3.y, int3.z);
@@ -36,6 +38,7 @@ public class Chunk {
 		position.mult(CHUNK_SIZE);
 		wait = false;
 		built = false;
+		garbage = false;
 		if(chunkBlock ==null)
 			chunkBlock = new ChunkBlock();
 	}
@@ -88,7 +91,7 @@ public class Chunk {
 	}
 	
 	public ChunkBlock getChunkBlock(int x, int y, int z) {
-		return World.world.getBlock(x + position.x, y + position.y, z + position.z);
+		return World.world.getChunkBlock(x + position.x, y + position.y, z + position.z);
 	}
 
 	public ChunkBlock getChunkBlock(Int3 int3) {
@@ -106,7 +109,10 @@ public class Chunk {
 			else setFlags(Block.FACE_EAST, Block.FACE_WEST, b, blocks[i.x+1][i.y][i.z]);
 			if(i.z==15) setFlags(Block.FACE_SOUTH,Block.FACE_NORTH,b, getChunkBlock(i.x, i.y, i.z + 1));
 			else setFlags(Block.FACE_SOUTH,Block.FACE_NORTH, b, blocks[i.x][i.y][i.z+1]);
-			if(i.y==15) setFlags(Block.FACE_BOTTOM,Block.FACE_TOP, b, getChunkBlock(i.x, i.y + 1, i.z));
+			if(i.y==15 && id.y!=WorldBuilder.WORLD_VCHUNK-1)
+				setFlags(Block.FACE_BOTTOM,Block.FACE_TOP, b, getChunkBlock(i.x, i.y + 1, i.z));
+			else if(i.y==15 && id.y==WorldBuilder.WORLD_VCHUNK-1)
+				setFlags(Block.FACE_BOTTOM,Block.FACE_TOP, b, airBlock);
 			else setFlags(Block.FACE_BOTTOM,Block.FACE_TOP, b, blocks[i.x][i.y+1][i.z]);
 		}
 	}

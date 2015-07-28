@@ -18,8 +18,6 @@ public class ChunkMesh {
 			new VertexAttribute(VertexAttributes.Usage.Position, 3, "a_Position");
 	private static final VertexAttribute a_Color =
 			new VertexAttribute(VertexAttributes.Usage.ColorPacked, 4, "a_Color");
-	private static final VertexAttribute a_TexCoords =
-			new VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_TexCoords");
 	private static final VertexAttribute a_TexNormal =
 			new VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_TexNormal");
 

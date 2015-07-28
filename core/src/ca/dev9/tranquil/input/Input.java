@@ -23,19 +23,7 @@ public abstract class Input implements InputInterface {
 	 * @param full Determines if the occupied screen space is 100% (true), or 0% (false).
 	 */
 	public Input(boolean full) {
-		if(full) {
-			x = 0f;
-			y = 0f;
-			width = 100f;
-			height = 100f;
-		} else {
-			x = -1f;
-			y = -1f;
-			width = 0f;
-			height = 0f;
-		}
-		active = true;
-		InputHandler.inputObjects.add(this);
+		this(full?0f:-1f,full?0f:-1f,full?100f:0f,full?100f:0f);
 	}
 
 	/**

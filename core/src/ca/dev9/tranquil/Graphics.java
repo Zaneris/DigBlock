@@ -5,12 +5,12 @@ import ca.dev9.tranquil.screens.World;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.TextureLoader;
-import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.graphics.glutils.VertexBufferObject;
+import com.badlogic.gdx.graphics.glutils.VertexData;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import java.util.ArrayList;
@@ -29,6 +29,7 @@ public final class Graphics {
 	private static AssetManager assets;
 	private static ArrayList<Texture> textures;
 	private static FrameBuffer frameBuffer;
+	private static SpriteBatch batch;
 
 	private static String getShader(String path) {
 		return Gdx.files.internal(path).readString();
@@ -87,13 +88,15 @@ public final class Graphics {
 		return false;
 	}
 
-	public static Texture updateDepthMap(Camera lightSource, ArrayList<ChunkMesh> meshSource) {
+	public static Texture updateDepthMap(Camera lightSource, ArrayList<ChunkMesh> meshSource, boolean clear) {
 		frameBuffer.begin();
+		if(clear) {
 			Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
 			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-			Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
-			Gdx.gl.glEnable(GL20.GL_CULL_FACE);
-			Gdx.gl.glCullFace(GL20.GL_BACK);
+		}
+		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
+		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
+		Gdx.gl.glCullFace(GL20.GL_BACK);
 			shaderDepth.begin();
 				shaderDepth.setUniformMatrix("u_LightMatrix", lightSource.combined);
 				for (ChunkMesh tR : meshSource)

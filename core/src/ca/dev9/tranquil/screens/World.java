@@ -15,6 +15,8 @@ import com.badlogic.gdx.utils.IntSet;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import ca.dev9.tranquil.input.*;
+
 /**
  * The world!
  * @author Zaneris
@@ -50,7 +52,7 @@ public class World extends InputScreen {
 	 * Create the world.
 	 */
 	public World() {
-		super(false);
+		super(false,true);
 		world = this;
 		seed = Math.random()*10000d;
 		curWireframe = Config.WIREFRAME;
@@ -70,38 +72,47 @@ public class World extends InputScreen {
 	}
 
 	private void buildChunks() {
-		if(!buildQueue.isEmpty()) {
-			Chunk chunk = buildQueue.get(0);
-			WorldBuilder.buildChunk(chunk,seed);
-			faceQueue.add(chunk);
-			chunk.built = true;
-			buildQueue.remove(0);
+		Chunk chunk;
+		for(int i = 0; i < buildQueue.size(); i++) {
+			chunk = buildQueue.remove(i);
+			if(!chunk.garbage) {
+				WorldBuilder.buildChunk(chunk,seed);
+				faceQueue.add(chunk);
+				chunk.built = true;
+				return;
+			}
 		}
 	}
 
 	private void createMeshes() {
-		if(!meshQueue.isEmpty()) {
-			Chunk chunk = meshQueue.get(0);
-			ChunkMeshGenerator.createMesh(chunk);
-			chunk.wait = false;
-			meshQueue.remove(0);
+		Chunk chunk;
+		for(int i = 0; i < meshQueue.size(); i++) {
+			chunk = meshQueue.remove(i);
+			if(!chunk.garbage) {
+				ChunkMeshGenerator.createMesh(chunk);
+				chunk.wait = false;
+				return;
+			}
 		}
 	}
 
 	private void updateFaces() {
-		if(!faceQueue.isEmpty()) {
-			Chunk chunk = faceQueue.get(0);
-			chunk.updateFaces();
-			faceQueue.remove(0);
+		Chunk chunk;
+		for(int i = 0; i < faceQueue.size(); i++) {
+			chunk = faceQueue.remove(i);
+			if(!chunk.garbage) {
+				chunk.updateFaces();
+				return;
+			}
 		}
 	}
 
-	public ChunkBlock getBlock(int x, int y, int z) {
+	public ChunkBlock getChunkBlock(int x, int y, int z) {
 		target.set(x, y, z);
-		return getBlock(target);
+		return getChunkBlock(target);
 	}
 	
-	public ChunkBlock getBlock(Int3 int3) {
+	public ChunkBlock getChunkBlock(Int3 int3) {
 		if(int3.y>WORLD_VBLOCK) return null;
 		target.copyFrom(int3);
 		cC.copyFrom(int3);
@@ -118,7 +129,7 @@ public class World extends InputScreen {
 	private void updateWorldTime() {
 		lightSource.position.set(player.cam.position);
 		lightSource.position.y += depth/2;
-		lightSource.rotateAround(player.cam.position, Vector3.Z, 75f);
+		lightSource.rotateAround(player.cam.position, Vector3.Z, -78f);
 		lightSource.lookAt(player.cam.position);
 		lightSource.update();
 	}
@@ -136,32 +147,30 @@ public class World extends InputScreen {
 		}
 		for (int r = 0; r < Config.DRAW_DIST; r++) {
 			for (i.newLoop((-r), r); i.doneLoop(); i.cubeLoop()) {
-				if (i.x >= -3 && i.z >= -3) { // TODO - Remove this to render behind you.
-					target.setPlus(i, player.currentChunk);
-					if (target.y >= 0 && target.y < World.WORLD_VCHUNK) {
-						if (player.currentChunk.distance(target) < Config.DRAW_DIST) {
-							chunk = oldMap.remove(target);
-							if (chunk == null) {
-								if (buildQueue.size() <= 10) {
-									if (garbage.isEmpty())
-										chunk = new Chunk();
-									else {
-										chunk = garbage.get(0);
-										garbage.remove(0);
-									}
-									chunk.set(target);
-									buildQueue.add(chunk);
-									chunkMap.add(chunk);
-								}
-							} else {
+				target.setPlus(i, player.currentChunk);
+				if (target.y >= 0 && target.y < World.WORLD_VCHUNK) {
+					if (player.currentChunk.distance(target) < Config.DRAW_DIST) {
+						chunk = oldMap.remove(target);
+						if (chunk == null) {
+							if (buildQueue.size() <= 10) {
+								if (garbage.isEmpty())
+									chunk = new Chunk();
+								else chunk = garbage.remove(0);
+								chunk.set(target);
+								buildQueue.add(chunk);
+								chunkMap.add(chunk);
+							}
+						} else {
+							if (player.cam.frustum.sphereInFrustumWithoutNearFar(
+									target.x * 16 + 8, target.y * 16 + 8, target.z * 16 + 8, 13.86f)) {
 								if (wireChange)
 									ChunkMeshGenerator.createMesh(chunk);
 								if (chunk.hasSolidMesh())
 									solidMeshes.add(chunk.solidMesh);
 								if (chunk.hasTransMesh())
 									transMeshes.add(chunk.transMesh);
-								chunkMap.add(chunk);
 							}
+							chunkMap.add(chunk);
 						}
 					}
 				}
@@ -170,13 +179,29 @@ public class World extends InputScreen {
 		for(Chunk tR:oldMap.values()) {
 			tR.reset();
 			garbage.add(tR);
+			tR.garbage = true;
 		}
 		oldMap.clear();
 	}
 
 	@Override
 	public void processKeysDown(IntSet keysDown) {
-		player.axisInput(2f,2f);
+		IntSet.IntSetIterator iter = keysDown.iterator();
+		int key;
+		while(iter.hasNext) {
+			key = iter.next();
+			if(key==Config.Keys.UP[0] || key==Config.Keys.UP[1]) {
+				player.axisY(1f);
+			} else if (key==Config.Keys.DOWN[0] || key==Config.Keys.DOWN[1]) {
+				player.axisY(-1f);
+			} else if (key==Config.Keys.LEFT[0] || key==Config.Keys.LEFT[1]) {
+				player.axisX(-1f);
+			} else if (key==Config.Keys.RIGHT[0] || key==Config.Keys.RIGHT[1]) {
+				player.axisX(1f);
+			} else if (key==Config.Keys.QUIT[0] || key==Config.Keys.QUIT[1]) {
+				Gdx.app.exit();
+			}
+		}
 	}
 
 	@Override
@@ -185,22 +210,35 @@ public class World extends InputScreen {
 	}
 
 	@Override
-	public void processTouchDown(IntMap<Int2> touch) {
-		player.axisInput(2f,2f);
+	public void processTouch(IntMap<Int2> touch) {
+		int deltaX, deltaY;
+		for(IntMap.Entry entry:touch.entries()) {
+			Int2 value = (Int2)entry.value;
+			Int2 xy = InputHandler.getXY(entry.key);
+			deltaX = value.x-xy.x;
+			deltaY = value.y-xy.y;
+			if(value.x < InputHandler.vWidth/2) {
+				player.axisInput(-deltaX/200f,deltaY/200f);
+			} else {
+				if(player.setRot(deltaX,deltaY)) {
+					value.x = xy.x;
+					value.y = xy.y;
+				}
+			}
+		}
 	}
 
 	@Override
-	public void processTouchDrag(IntMap<Int2> touch) {
-
-	}
-
-	@Override
-	public void processMouseMove(IntMap<Int2> move) {
-
+	public void processMouseMove(int x, int y) {
+		int deltaX = InputHandler.vWidth/2 - x;
+		int deltaY = InputHandler.vHeight/2 - y;
+		if(player.setRot(deltaX,deltaY))
+			InputHandler.centerMouse();
 	}
 
 	@Override
 	public void run() {
+		player.move();
 		player.update();
 		frameCounter++;
 		if(frameCounter>=FPC) {
@@ -209,8 +247,9 @@ public class World extends InputScreen {
 			if(player.moved32()) {
 				updateWorldTime();
 				player.updateLastPosition();
-			}
-			depthMap = Graphics.updateDepthMap(lightSource,solidMeshes);
+				depthMap = Graphics.updateDepthMap(lightSource,solidMeshes,true);
+			} else 
+				depthMap = Graphics.updateDepthMap(lightSource,solidMeshes,false);
 		} else switch(frameCounter%3) {
 			case 0: createMeshes(); break;
 			case 1: buildChunks(); break;

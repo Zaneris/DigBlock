@@ -25,17 +25,12 @@ public interface InputInterface {
 	 * For handling touch input.
 	 * @param touch X,Y location on screen in percent.
 	 */
-	public void processTouchDown(IntMap<Int2> touch);
-
-	/**
-	 * For handling dragged touch.
-	 * @param touch X,Y location on screen in percent.
-	 */
-	public void processTouchDrag(IntMap<Int2> touch);
+	public void processTouch(IntMap<Int2> touch);
 
 	/**
 	 * For handling mouse movement with no button pressed.
-	 * @param move X,Y location on screen in percent.
+	 * @param x X location on screen.
+	 * @param y Y location on screen.
 	 */
-	public void processMouseMove(IntMap<Int2> move);
+	public void processMouseMove(int x, int y);
 }
