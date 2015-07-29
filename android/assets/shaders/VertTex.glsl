@@ -28,11 +28,11 @@ vec2 texCoords(int i) {
 
 void main() {
 	float i = mod(a_TexNormal,4.0);
-	v_DiffuseUV = texCoords(int(i));
+	v_DiffuseUV = texCoords(int(i+0.1));
 	float normData = (a_TexNormal-i)/4.0;
 	i = mod(normData,6.0);
-	v_Light = max(dot(normal(int(i)), -u_LightVector), 0.5)+0.2;
-	v_Tex = (normData-i)/6.0;
+	v_Light = max(dot(normal(int(i+0.1)),-u_LightVector), 0.5)+0.2;
+	v_Tex = (normData-i)/6.0+0.1;
 	vec4 matrix = u_LightMatrix * vec4(a_Position, 1.0);
 	v_DepthMap = matrix.xy*0.5+0.5;
 	v_Height = a_Position.y/256.0;
