@@ -28,7 +28,7 @@ public class World extends InputScreen {
 	private static final byte WORLD_VCHUNK = WorldBuilder.WORLD_VCHUNK;
 	private static final byte WORLD_VBLOCK = WorldBuilder.WORLD_VBLOCK;
 	
-	private final ChunkMap<Chunk> chunkMap = new ChunkMap<>();
+	public final ChunkMap<Chunk> chunkMap = new ChunkMap<>();
 	private final ChunkMap<Chunk> oldMap = new ChunkMap<>();
 	private final ArrayList<Chunk> buildQueue = new ArrayList<>();
 	private final ArrayList<Chunk> faceQueue = new ArrayList<>();
@@ -222,12 +222,12 @@ public class World extends InputScreen {
 			deltaX = value.x-xy.x;
 			deltaY = value.y-xy.y;
 			if(value.x < InputHandler.vWidth/2) {
-				player.axisInput(-deltaX/200f,deltaY/200f);
+				player.axisInput(-deltaX/100f,deltaY/100f);
 			} else {
-				player.jumpCount();
 				if(player.setRot(deltaX,deltaY)) {
 					value.x = xy.x;
 					value.y = xy.y;
+					player.jumpCount();
 				}
 			}
 		}

@@ -10,6 +10,7 @@ public final class Config {
 	public static final boolean DEBUG = true;
 	public static boolean WIREFRAME = false;
 	public static final float GRAVITY = 9.8f;
+	public static final float TERM_VELOCITY = -20f;
 	public static boolean MOBILE;
 	public static byte DRAW_DIST;
 	

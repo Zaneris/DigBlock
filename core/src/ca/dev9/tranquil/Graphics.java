@@ -33,7 +33,6 @@ public final class Graphics {
 	private static AssetManager assets;
 	private static ArrayList<Texture> textures;
 	private static FrameBuffer frameBuffer;
-	private static SpriteBatch batch;
 
 	private static String getShader(String path) {
 		return Gdx.files.internal(path).readString();
@@ -78,15 +77,13 @@ public final class Graphics {
 		if(textures!=null)
 			return true;
 		if (assets.update()) {
-			if(textures==null) {
-				textures = new ArrayList<>();
-				textures.add(assets.get("textures/Water.png", Texture.class));
-				textures.add(assets.get("textures/Dirt.png", Texture.class));
-				textures.add(assets.get("textures/GrassSide.png", Texture.class));
-				textures.add(assets.get("textures/GrassTop.png", Texture.class));
-				for (Texture tex : textures)
-					tex.setFilter(Texture.TextureFilter.MipMap, Texture.TextureFilter.Nearest);
-			}
+			textures = new ArrayList<>();
+			textures.add(assets.get("textures/Water.png", Texture.class));
+			textures.add(assets.get("textures/Dirt.png", Texture.class));
+			textures.add(assets.get("textures/GrassSide.png", Texture.class));
+			textures.add(assets.get("textures/GrassTop.png", Texture.class));
+			for (Texture tex : textures)
+				tex.setFilter(Texture.TextureFilter.MipMap, Texture.TextureFilter.Nearest);
 			return true;
 		}
 		return false;
@@ -111,8 +108,7 @@ public final class Graphics {
 							chunk.solidMesh.render(shaderDepth);
 					}
 				} else for (ChunkMesh tR : meshSource)
-					if (tR.vertices > 0)
-						tR.render(shaderDepth);
+					tR.render(shaderDepth);
 			shaderDepth.end();
 			Gdx.gl.glDisable(GL20.GL_CULL_FACE);
 			Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
@@ -154,16 +150,14 @@ public final class Graphics {
 		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
 		Gdx.gl.glCullFace(GL20.GL_BACK);
 		for(ChunkMesh tR:solidMeshes)
-			if (tR.vertices>0)
-				tR.render(shaderOut);
+			tR.render(shaderOut);
 		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		if(!Config.WIREFRAME)
 			shaderOut.setUniformf("u_Alpha", 0.7f);
 		for(ChunkMesh tR:transMeshes)
-			if(tR.vertices>0)
-				tR.render(shaderOut);
+			tR.render(shaderOut);
 		Gdx.gl.glDisable(GL20.GL_BLEND);
 		Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
 		shaderOut.end();

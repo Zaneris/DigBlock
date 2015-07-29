@@ -95,6 +95,37 @@ public class Chunk {
 	public ChunkBlock getChunkBlock(Int3 int3) {
 		return getChunkBlock(int3.x, int3.y, int3.z);
 	}
+	
+	public Block getWorldBlock(Int3 int3) {
+		int x = int3.x-position.x;
+		int y = int3.y-position.y;
+		int z = int3.z-position.z;
+		if(x>=0 && y>=0 && z>=0 && x<16 && y<16 && z<16)
+			return blocks[x][y][z];
+		else {
+			ChunkBlock tR = World.world.getChunkBlock(int3);
+			if(tR==null)
+				return null;
+			else
+				return tR.block;
+		}
+	}
+	
+	public Block getBlock(Int3 int3) {
+		return getBlock(int3.x,int3.y,int3.z);
+	}
+	
+	public Block getBlock(int x, int y, int z) {
+		if(x>=0 && y>=0 && z>=0 && x<16 && y<16 && z<16)
+			return blocks[x][y][z];
+		else {
+			ChunkBlock tR = World.world.getChunkBlock(position.x+x,position.y+y,position.z+z);
+			if(tR==null)
+				return null;
+			else
+				return tR.block;
+		}
+	}
 
 	public void updateFaces() {
 		Block b;

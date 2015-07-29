@@ -34,7 +34,11 @@ public class Int3 {
 	}
 
 	public void set(Vector3 v3) {
-		set((int)Math.floor(v3.x), (int)Math.floor(v3.y), (int)Math.floor(v3.z));
+		set(v3.x,v3.y,v3.z);
+	}
+	
+	public void set(float x, float y, float z) {
+		set((int)Math.floor(x),(int)Math.floor(y),(int)Math.floor(z));
 	}
 
 	public void setPlus(Int3 value1, Int3 value2) {

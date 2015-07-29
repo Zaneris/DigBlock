@@ -3,16 +3,12 @@ package ca.dev9.tranquil;
 import ca.dev9.tranquil.blocks.Block;
 import ca.dev9.tranquil.chunk.Chunk;
 import ca.dev9.tranquil.screens.World;
-import ca.dev9.tranquil.utils.ChunkBlock;
 import ca.dev9.tranquil.utils.Int3;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.actions.*;
 import com.badlogic.gdx.utils.TimeUtils;
-
-import java.security.*;
 
 /**
  * Main player of the game.
@@ -21,45 +17,56 @@ import java.security.*;
 public class Player {
 	public PerspectiveCamera cam;
 	private Vector3 lastPosition,tmp,out;
-	private final Int3 int31,int32;
+	private final Int3 newBlk,curBlk;
 	private Vector2 move,rot;
 	private byte rotCount;
 	private long jumpCount;
-	public boolean jump,falling,jumpTouch,jumpReady;
 	public final Int3 currentChunk;
+	public Chunk chunk;
+	public boolean jump,falling,jumpTouch,jumpReady;
 
 	public Player() {
-		currentChunk = new Int3();
 		rotCount = 0;
 		jumpCount=0;
 		tmp = new Vector3();
 		out = new Vector3();
 		rot = new Vector2();
 		move = new Vector2();
-		int31 = new Int3();
-		int32 = new Int3();
+		newBlk = new Int3();
+		curBlk = new Int3();
 		jump = false;
 		jumpReady = false;
 		falling = false;
+		currentChunk = new Int3();
 		cam = new PerspectiveCamera(75f, Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-		cam.position.set(0f, 50f, 0f);
+		cam.position.set(0f, 35f, 0f);
 		cam.direction.set(0f, 0f, 1f);
 		cam.near = 0.1f;
 	}
 
 	public void update() {
 		rotateCam();
-		currentChunk.set(cam.position);
-		currentChunk.div(Chunk.CHUNK_SIZE);
+		newBlk.set(cam.position);
+		newBlk.div(Chunk.CHUNK_SIZE);
+		if(!newBlk.equals(currentChunk)) {
+			currentChunk.set(newBlk);
+			chunk = World.world.chunkMap.get(currentChunk);
+		}
 		cam.update();
+		if(!jumpTouch && rotCount == 0)
+			jumpReady = true;
+		else
+			jumpReady = false;
+		jumpTouch = false;
 	}
 
 	public void jumpCount() {
 		if(jumpReady) {
-			if((TimeUtils.millis()-jumpCount)<500)
+			if(TimeUtils.timeSinceMillis(jumpCount)<600)
 				jump = true;
-			else
+			else {
 				jumpCount = TimeUtils.millis();
+			}
 		}
 		jumpTouch = true;
 	}
@@ -87,57 +94,49 @@ public class Player {
 	}
 	
 	public void move(float dT) {
-		if(!jumpTouch)
-			jumpReady = true;
-		else
-			jumpReady = false;
-		jumpTouch = false;
 		if(dT>0.16f)
 			dT = 0.16f;
 		if(!falling) {
-			out.x *= 0.8f;
-			out.z *= 0.8f;
+			out.x *= 0.5f;
+			out.z *= 0.5f;
 		}
 		falling = true;
 		out.y -= Config.GRAVITY*dT;
-		if(out.y<-Config.GRAVITY*2f)
-			out.y = -Config.GRAVITY*2f;
-		tmp.set(out);
-		tmp.scl(dT);
-		int31.set((int) Math.floor(tmp.x + cam.position.x),
-				(int) Math.floor(tmp.y + cam.position.y - 1.5f),
-				(int) Math.floor(tmp.z + cam.position.z));
-		int32.set((int)Math.floor(cam.position.x),
-				(int)Math.floor(cam.position.y-1.5f),
-				(int)Math.floor(cam.position.z));
-		ChunkBlock cB = World.world.getChunkBlock(int31);
-		if(cB!=null && cB.block.blockType!=Block.AIR && out.y<0f) {
-			cam.position.y = (float)Math.floor(cam.position.y) + (cB.block.blockType==Block.WATER?0.3f:0.5f);
-			if(move.len()>1.0)
-				move.nor();
+		if(out.y<Config.TERM_VELOCITY)
+			out.y = Config.TERM_VELOCITY;
+		boolean onGround = blockCollision(dT, -1.5f) && out.y<0f;
+		if(move.len()>1.0)
+			move.nor();
+		if(onGround) {
+			cam.position.y = (float)Math.floor(cam.position.y) + 0.5f;
 			out.set(cam.direction.x, 0f, cam.direction.z).nor().scl(move.y * 3.0f);
 			tmp.set(cam.direction).crs(cam.up).nor().scl(move.x * 3.0f);
 			out.add(tmp);
 			if(jump) {
-				out.scl(0.8f);
+				out.scl(0.5f);
 				out.add(0f,5f,0f);
 			} else falling = false;
-			tmp.set(out);
-			tmp.scl(dT);
-			int31.set((int) Math.floor(tmp.x + cam.position.x),
-					(int) Math.floor(tmp.y + cam.position.y - 1.2f),
-					(int) Math.floor(tmp.z + cam.position.z));
-			int32.set((int) Math.floor(cam.position.x),
-					(int) Math.floor(cam.position.y - 1.2f),
-					(int) Math.floor(cam.position.z));
-			cB = World.world.getChunkBlock(int31);
+		} else {
+			tmp.set(cam.direction.x, 0f, cam.direction.z).nor().scl(move.y/100f);
+			out.add(tmp);
+			tmp.set(cam.direction).crs(cam.up).nor().scl(move.x/100f);
+			out.add(tmp);
 		}
-		if(cB!=null && cB.block.blockType!=Block.AIR) {
-			if(int32.x!=int31.x)
+		setInt3(curBlk, -1.2f);
+		if(blockCollision(dT, -1.2f)) {
+			if(curBlk.x!=newBlk.x && curBlk.z!=newBlk.z) {
+				float x = out.x;
 				out.x = 0f;
-			if(int32.y!=int31.y)
-				out.y = 0f;
-			if(int32.z!=int31.z)
+				if(blockCollision(dT, -1.2f)) {
+					out.x = x;
+					out.z = 0f;
+					if(blockCollision(dT, -1.2f)) {
+						out.x = 0f;
+					}
+				}
+			} else if(curBlk.x!=newBlk.x) {
+				out.x = 0f;
+			} else if(curBlk.z!=newBlk.z)
 				out.z = 0f;
 			tmp.set(out);
 			tmp.scl(dT);
@@ -145,6 +144,26 @@ public class Player {
 		cam.position.add(tmp);
 		move.setZero();
 		jump = false;
+	}
+
+	private boolean blockCollision(float dT, float yOff) {
+		tmp.set(out);
+		tmp.scl(dT);
+		setInt3Plus(newBlk, tmp, yOff);
+		Block block = getBlock(newBlk);
+		return block!=null && block.blockType!=Block.AIR;
+	}
+
+	private void setInt3Plus(Int3 int3, Vector3 plus, float yOff) {
+		int3.set(cam.position.x+plus.x,
+				cam.position.y+plus.y+yOff,
+				cam.position.z+plus.z);
+	}
+
+	private void setInt3(Int3 int3, float yOff) {
+		int3.set(cam.position.x,
+				cam.position.y+yOff,
+				cam.position.z);
 	}
 	
 	public boolean setRot(int deltaX,int deltaY) {
@@ -154,6 +173,12 @@ public class Player {
 		if(Config.MOBILE) rot.set(deltaX*.05f,deltaY*.05f);
 		else rot.set(deltaX*.02f,deltaY*.02f);
 		return true;
+	}
+	
+	private Block getBlock(Int3 int3) {
+		if(chunk==null)
+			return null;
+		else return chunk.getWorldBlock(int3);
 	}
 	
 	private void rotateCam() {
