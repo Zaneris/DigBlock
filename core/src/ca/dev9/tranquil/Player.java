@@ -57,21 +57,24 @@ public class Player {
 
 	public void jumpCount() {
 		if(jumpReady) {
-			if(TimeUtils.timeSinceMillis(jumpCount)<600)
+			if(TimeUtils.timeSinceMillis(jumpCount)<600) {
 				jump = true;
-			else {
+			} else {
 				jumpCount = TimeUtils.millis();
 			}
+			jumpReady = false;
 		}
 		jumpTouch = true;
 	}
 
 	private void checkTouchJump() {
-		if(!jumpTouch && rotCount == 0)
-			jumpReady = true;
-		else
-			jumpReady = false;
-		jumpTouch = false;
+		if(rotCount==0) {
+			if (!jumpTouch)
+				jumpReady = true;
+			else
+				jumpReady = false;
+			jumpTouch = false;
+		}
 	}
 
 	public boolean moved32() {
