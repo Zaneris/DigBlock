@@ -26,7 +26,7 @@ public class Player {
 	public boolean jump,falling,jumpTouch,jumpReady;
 
 	public Player() {
-		rotCount = 0;
+		rotCount=0;
 		jumpCount=0;
 		tmp = new Vector3();
 		out = new Vector3();
@@ -53,11 +53,6 @@ public class Player {
 			chunk = World.world.chunkMap.get(currentChunk);
 		}
 		cam.update();
-		if(!jumpTouch && rotCount == 0)
-			jumpReady = true;
-		else
-			jumpReady = false;
-		jumpTouch = false;
 	}
 
 	public void jumpCount() {
@@ -69,6 +64,14 @@ public class Player {
 			}
 		}
 		jumpTouch = true;
+	}
+
+	private void checkTouchJump() {
+		if(!jumpTouch && rotCount == 0)
+			jumpReady = true;
+		else
+			jumpReady = false;
+		jumpTouch = false;
 	}
 
 	public boolean moved32() {
@@ -94,6 +97,7 @@ public class Player {
 	}
 	
 	public void move(float dT) {
+		checkTouchJump();
 		if(dT>0.16f)
 			dT = 0.16f;
 		if(!falling) {
