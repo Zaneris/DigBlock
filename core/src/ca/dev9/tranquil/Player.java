@@ -59,6 +59,7 @@ public class Player {
 		if(jumpReady) {
 			if(TimeUtils.timeSinceMillis(jumpCount)<600) {
 				jump = true;
+				jumpCount = 0;
 			} else {
 				jumpCount = TimeUtils.millis();
 			}
