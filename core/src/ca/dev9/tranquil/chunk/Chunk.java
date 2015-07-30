@@ -25,6 +25,7 @@ public class Chunk {
 	public ChunkMesh transMesh;
 	public boolean wait = false; // Awaiting new Mesh
 	public boolean built = false;
+	public boolean inDepth = false;
 	public boolean garbage = true;
 
 	public void set(Int3 int3) {
@@ -65,6 +66,7 @@ public class Chunk {
 		garbage = true;
 		wait = false;
 		built = false;
+		inDepth = false;
 	}
 
 	@Override

@@ -29,10 +29,14 @@ public final class Graphics {
 	private static ShaderProgram shaderWire;
 	private static ShaderProgram shaderTex;
 	private static ShaderProgram shaderDepth;
+	private static ShaderProgram shaderOut;
 	private static TextureLoader.TextureParameter param;
 	private static AssetManager assets;
 	private static ArrayList<Texture> textures;
 	private static FrameBuffer frameBuffer;
+	private static Camera cam;
+	private static Camera light;
+	private static Texture depthMap;
 
 	private static String getShader(String path) {
 		return Gdx.files.internal(path).readString();
@@ -88,78 +92,88 @@ public final class Graphics {
 		}
 		return false;
 	}
-
-	public static Texture updateDepthMap(Camera lightSource, ArrayList<ChunkMesh> meshSource, ChunkMap<Chunk> chunkMap, boolean clear) {
+	
+	public static void startRender(Camera cam, Camera light, Texture depthMap) {
+		Graphics.cam = cam;
+		Graphics.light = light;
+		Graphics.depthMap = depthMap;
+		shaderOut = shaderTex;
+		shaderTex.begin();
+		bindTextures();
+		shaderTex.setUniformMatrix("u_CamMatrix", cam.combined);
+		shaderTex.setUniformMatrix("u_LightMatrix", light.combined);
+		shaderTex.setUniformf("u_LightVector", light.direction);
+		shaderTex.setUniformf("u_Alpha", 1f);
+	}
+	
+	public static void endRender() {
+		shaderTex.end();
+		shaderOut = null;
+		Graphics.cam = null;
+		Graphics.light = null;
+		Graphics.depthMap = null;
+	}
+	
+	public static void startDepth(Camera light) {
 		frameBuffer.begin();
-		if(clear) {
-			Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
-			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-		}
+		Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
 		Gdx.gl.glCullFace(GL20.GL_BACK);
-			shaderDepth.begin();
-				shaderDepth.setUniformMatrix("u_LightMatrix", lightSource.combined);
-				if(clear) {
-					Chunk chunk;
-					for(IntMap.Entry entry:chunkMap) {
-						chunk = (Chunk)entry.value;
-						if (chunk.built && chunk.hasSolidMesh())
-							chunk.solidMesh.render(shaderDepth);
-					}
-				} else for (ChunkMesh tR : meshSource)
-					tR.render(shaderDepth);
-			shaderDepth.end();
-			Gdx.gl.glDisable(GL20.GL_CULL_FACE);
-			Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
+		shaderOut = shaderDepth;
+		shaderDepth.begin();
+		shaderDepth.setUniformMatrix("u_LightMatrix", light.combined);
+	}
+	
+	public static Texture endDepth() {
+		shaderDepth.end();
+		shaderOut = null;
+		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
+		Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
 		frameBuffer.end();
 		return frameBuffer.getColorBufferTexture();
 	}
 	
-	private static void bindTextures(ShaderProgram shaderOut, Texture depthMap) {
-		depthMap.bind(0);
-		shaderOut.setUniformi("u_DepthMap", 0);
+	private static void bindTextures() {
+		if(depthMap!=null) {
+			depthMap.bind(0);
+			shaderTex.setUniformi("u_DepthMap", 0);
+		}
 		textures.get(0).bind(1);
-		shaderOut.setUniformi("u_Water", 1);
+		shaderTex.setUniformi("u_Water", 1);
 		textures.get(1).bind(2);
-		shaderOut.setUniformi("u_Dirt", 2);
+		shaderTex.setUniformi("u_Dirt", 2);
 		textures.get(2).bind(3);
-		shaderOut.setUniformi("u_GrassSide", 3);
+		shaderTex.setUniformi("u_GrassSide", 3);
 		textures.get(3).bind(4);
-		shaderOut.setUniformi("u_GrassTop", 4);
+		shaderTex.setUniformi("u_GrassTop", 4);
 	}
-
-	public static void renderChunks(Camera playerCam, Camera lightSource, ArrayList<ChunkMesh> solidMeshes, ArrayList<ChunkMesh> transMeshes, Texture depthMap) {
-		ShaderProgram shaderOut;
-		if(Config.WIREFRAME)
-			shaderOut = shaderWire;
-		else
-			shaderOut = shaderTex;
-		if(Config.WIREFRAME) Gdx.gl.glClearColor(0f,0f,0f,1f);
-		else Gdx.gl.glClearColor(0.494f, 0.753f, 0.93f, 1f);
+	
+	public static void startSolid() {
+		Gdx.gl.glClearColor(0.494f, 0.753f, 0.93f, 1f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
-		shaderOut.begin();
-		shaderOut.setUniformMatrix("u_CamMatrix", playerCam.combined);
-		if(!Config.WIREFRAME) {
-			shaderOut.setUniformMatrix("u_LightMatrix", lightSource.combined);
-			shaderOut.setUniformf("u_LightVector", lightSource.direction);
-			bindTextures(shaderOut, depthMap);
-			shaderOut.setUniformf("u_Alpha", 1f);
-		}
 		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
 		Gdx.gl.glCullFace(GL20.GL_BACK);
-		for(ChunkMesh tR:solidMeshes)
-			tR.render(shaderOut);
+	}
+	
+	public static void renderMesh(ChunkMesh mesh) {
+		mesh.render(shaderOut);
+	}
+	
+	public static void endSolid() {
 		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
+	}
+	
+	public static void startTrans() {
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		if(!Config.WIREFRAME)
-			shaderOut.setUniformf("u_Alpha", 0.7f);
-		for(ChunkMesh tR:transMeshes)
-			tR.render(shaderOut);
+		shaderTex.setUniformf("u_Alpha", 0.7f);
+	}
+	
+	public static void endTrans() {
 		Gdx.gl.glDisable(GL20.GL_BLEND);
 		Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
-		shaderOut.end();
 	}
 }

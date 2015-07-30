@@ -34,8 +34,7 @@ public class World extends InputScreen {
 	private final ArrayList<Chunk> faceQueue = new ArrayList<>();
 	public  final ArrayList<Chunk> meshQueue = new ArrayList<>();
 	private final ArrayList<Chunk> garbage = new ArrayList<>();
-	private final ArrayList<ChunkMesh> solidMeshes = new ArrayList<>();
-	private final ArrayList<ChunkMesh> transMeshes = new ArrayList<>();
+	private final ArrayList<ChunkMesh> transMesh = new ArrayList<>();
 	private final OrthographicCamera lightSource;
 	private final ChunkBlock cb = new ChunkBlock();
 	private final Int3 target = new Int3();
@@ -135,37 +134,27 @@ public class World extends InputScreen {
 	}
 	
 	private void updateVisible() {
-		solidMeshes.clear();
-		transMeshes.clear();
 		oldMap.putAll(chunkMap);
 		chunkMap.clear();
 		Chunk chunk;
-		boolean wireChange = false;
-		boolean inFrustum;
-		if(curWireframe!=Config.WIREFRAME) {
-			Config.WIREFRAME = !Config.WIREFRAME;
-			wireChange = true;
-		}
+		Graphics.startRender(player.cam, lightSource, depthMap);
+		Graphics.startSolid();
 		for (int r = 0; r < Config.DRAW_DIST; r++) {
 			for (i.newLoop((-r), r); i.doneLoop(); i.cubeLoop()) {
 				target.setPlus(i, player.currentChunk);
 				if (target.y >= 0 && target.y < World.WORLD_VCHUNK) {
 					if (player.currentChunk.distance(target) < Config.DRAW_DIST) {
 						chunk = oldMap.remove(target);
-						inFrustum = player.cam.frustum.sphereInFrustumWithoutNearFar(
-								target.x*16+8, target.y*16+8, target.z*16+8, 13.86f);
 						if(chunk!=null) {
-							if (inFrustum) {
-								if (wireChange)
-									ChunkMeshGenerator.createMesh(chunk);
+							if (inFrustum(target)) {
 								if (chunk.hasSolidMesh())
-									solidMeshes.add(chunk.solidMesh);
+									Graphics.renderMesh(chunk.solidMesh);
 								if (chunk.hasTransMesh())
-									transMeshes.add(chunk.transMesh);
+									transMesh.add(chunk.transMesh);
 							}
 							chunkMap.add(chunk);
 						} else if (buildQueue.size() < 10) {
-							if(inFrustum || r<2) {
+							if(inFrustum(target) || r<2) {
 								if (garbage.isEmpty())
 									chunk = new Chunk();
 								else chunk = garbage.remove(0);
@@ -178,12 +167,28 @@ public class World extends InputScreen {
 				}
 			}
 		}
+		Graphics.endSolid();
+		renderTrans();
+		Graphics.endRender();
 		for(Chunk tR:oldMap.values()) {
 			tR.reset();
 			garbage.add(tR);
 			tR.garbage = true;
 		}
 		oldMap.clear();
+	}
+	
+	private void renderTrans() {
+		Graphics.startTrans();
+		for(ChunkMesh mesh:transMesh)
+			Graphics.renderMesh(mesh);
+		transMesh.clear();
+		Graphics.endTrans();
+	}
+	
+	private boolean inFrustum(Int3 int3) {
+		return player.cam.frustum.sphereInFrustumWithoutNearFar(
+			int3.x*16+8, int3.y*16+8, int3.z*16+8, 13.86f);
 	}
 
 	@Override
@@ -249,19 +254,46 @@ public class World extends InputScreen {
 		if(frameCounter>=FPC) {
 			frameCounter = 0;
 			updateVisible();
-			boolean clear = false;
-			if(player.moved32()) {
-				updateWorldTime();
-				player.updateLastPosition();
-				clear = true;
+		} else {
+			switch(frameCounter%3) {
+				case 0: createMeshes(); break;
+				case 1: buildChunks(); break;
+				case 2: updateFaces();
 			}
-			depthMap = Graphics.updateDepthMap(lightSource,solidMeshes,chunkMap,clear);
-		} else switch(frameCounter%3) {
-			case 0: createMeshes(); break;
-			case 1: buildChunks(); break;
-			case 2: updateFaces();
+			Chunk chunk;
+			Graphics.startRender(player.cam,lightSource,depthMap);
+			Graphics.startSolid();
+			for(IntMap.Entry entry:chunkMap) {
+				chunk = (Chunk)entry.value;
+				if(chunk.built && chunk.inDepth && inFrustum(chunk.id)) {
+					if(chunk.hasSolidMesh())
+						Graphics.renderMesh(chunk.solidMesh);
+					if(chunk.hasTransMesh())
+						transMesh.add(chunk.transMesh);
+				}
+			}
+			Graphics.endSolid();
+			renderTrans();
+			Graphics.endRender();
+			if(frameCounter==15){
+				if (player.moved32()) {
+					updateWorldTime();
+					player.updateLastPosition();
+				}
+				Graphics.startDepth(lightSource);
+				for(IntMap.Entry entry:chunkMap) {
+					chunk = (Chunk)entry.value;
+					if(chunk.built) {
+						if(chunk.hasSolidMesh()) {
+							Graphics.renderMesh(chunk.solidMesh);
+							chunk.inDepth = true;
+						} else if (chunk.hasTransMesh())
+							chunk.inDepth = true;
+					}
+				}
+				depthMap = Graphics.endDepth();
+			}
 		}
-		Graphics.renderChunks(player.cam, lightSource, solidMeshes, transMeshes, depthMap);
 	}
 	
 	@Override

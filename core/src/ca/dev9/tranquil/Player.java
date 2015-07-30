@@ -16,7 +16,7 @@ import com.badlogic.gdx.utils.TimeUtils;
  */
 public class Player {
 	public PerspectiveCamera cam;
-	private Vector3 lastPosition,tmp,out;
+	private Vector3 lastPosition,tmp,tmp2,out;
 	private final Int3 newBlk,curBlk;
 	private Vector2 move,rot;
 	private byte rotCount;
@@ -29,6 +29,7 @@ public class Player {
 		rotCount=0;
 		jumpCount=0;
 		tmp = new Vector3();
+		tmp2 = new Vector3();
 		out = new Vector3();
 		rot = new Vector2();
 		move = new Vector2();
@@ -39,7 +40,7 @@ public class Player {
 		falling = false;
 		currentChunk = new Int3();
 		cam = new PerspectiveCamera(75f, Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-		cam.position.set(0f, 35f, 0f);
+		cam.position.set(0.5f, 35f, 0.5f);
 		cam.direction.set(0f, 0f, 1f);
 		cam.near = 0.1f;
 	}
@@ -112,10 +113,9 @@ public class Player {
 		out.y -= Config.GRAVITY*dT;
 		if(out.y<Config.TERM_VELOCITY)
 			out.y = Config.TERM_VELOCITY;
-		boolean onGround = blockCollision(dT, -1.5f) && out.y<0f;
 		if(move.len()>1.0)
 			move.nor();
-		if(onGround) {
+		if(groundCheck(dT)) {
 			cam.position.y = (float)Math.floor(cam.position.y) + 0.5f;
 			out.set(cam.direction.x, 0f, cam.direction.z).nor().scl(move.y * 3.0f);
 			tmp.set(cam.direction).crs(cam.up).nor().scl(move.x * 3.0f);
@@ -130,15 +130,15 @@ public class Player {
 			tmp.set(cam.direction).crs(cam.up).nor().scl(move.x/100f);
 			out.add(tmp);
 		}
-		setInt3(curBlk, -1.2f);
-		if(blockCollision(dT, -1.2f)) {
+		setInt3(curBlk, -1.25f);
+		if(blockCollision(dT, -1.25f)) {
 			if(curBlk.x!=newBlk.x && curBlk.z!=newBlk.z) {
 				float x = out.x;
 				out.x = 0f;
-				if(blockCollision(dT, -1.2f)) {
+				if(blockCollision(dT, -1.25f)) {
 					out.x = x;
 					out.z = 0f;
-					if(blockCollision(dT, -1.2f)) {
+					if(blockCollision(dT, -1.25f)) {
 						out.x = 0f;
 					}
 				}
@@ -153,11 +153,20 @@ public class Player {
 		move.setZero();
 		jump = false;
 	}
+	
+	private boolean groundCheck(float dT) {
+		if(out.y>=0f)
+			return false;
+		tmp.set(out).scl(dT);
+		setInt3Plus(newBlk, tmp, -1.5f);
+		Block block = getBlock(newBlk);
+		return block!=null && block.blockType!=Block.AIR;
+	}
 
 	private boolean blockCollision(float dT, float yOff) {
-		tmp.set(out);
-		tmp.scl(dT);
-		setInt3Plus(newBlk, tmp, yOff);
+		tmp.set(out).scl(dT);
+		tmp2.set(out).nor().scl(.25f).add(tmp);
+		setInt3Plus(newBlk, tmp2, yOff);
 		Block block = getBlock(newBlk);
 		return block!=null && block.blockType!=Block.AIR;
 	}
