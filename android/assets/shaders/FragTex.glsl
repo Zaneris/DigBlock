@@ -14,15 +14,15 @@ varying float v_Tex;
 varying float v_Light;
 varying float v_Height;
 
-vec3 rgb (int i) {
-	if(i==0) return texture2D(u_Water, v_DiffuseUV).rgb;
-	else if(i==1) return texture2D(u_Dirt, v_DiffuseUV).rgb;
-	else if(i==2) return texture2D(u_GrassSide, v_DiffuseUV).rgb;
+vec3 rgb (float i) {
+	if(i<0.5) return texture2D(u_Water, v_DiffuseUV).rgb;
+	else if(i<1.5) return texture2D(u_Dirt, v_DiffuseUV).rgb;
+	else if(i<2.5) return texture2D(u_GrassSide, v_DiffuseUV).rgb;
 	else return texture2D(u_GrassTop, v_DiffuseUV).rgb;
 }
 
 float depthChk(vec2 xy) {
-	float bias = 0.0021;
+	float bias = 0.0005;
 	vec4 rgba = texture2D(u_DepthMap, xy);
 	if(v_Height+bias<rgba.r)
 		return 0.0;
@@ -46,6 +46,6 @@ float avgDepth() {
 }
 
 void main() {
-	gl_FragColor.rgb = v_Light*avgDepth()*rgb(int(v_Tex));
+	gl_FragColor.rgb = v_Light*avgDepth()*rgb(v_Tex);
 	gl_FragColor.a = u_Alpha;
 }

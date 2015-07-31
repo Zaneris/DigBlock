@@ -46,6 +46,7 @@ public class World extends InputScreen {
 	private Texture depthMap;
 	private double seed;
 	private short depth;
+	private float tod;
 
 	/**
 	 * Create the world.
@@ -58,6 +59,7 @@ public class World extends InputScreen {
 		lightSource = new OrthographicCamera();
 		lightSource.near = 1.0f;
 		frameCounter = FPC;
+		tod = 85f;
 		player = new Player();
 		updateDepth();
 	}
@@ -126,11 +128,14 @@ public class World extends InputScreen {
 	}
 
 	private void updateWorldTime() {
-		lightSource.position.set(player.cam.position);
+		lightSource.position.set(player.lastPosition);
 		lightSource.position.y += depth/2;
-		lightSource.rotateAround(player.cam.position, Vector3.Z, -78f);
-		lightSource.lookAt(player.cam.position);
+		lightSource.rotateAround(player.lastPosition, Vector3.Z, tod);
+		lightSource.lookAt(player.lastPosition);
 		lightSource.update();
+		tod -= 20f-(Math.abs(lightSource.direction.x)*19f);
+		if(tod<-85f)
+			tod = 85f;
 	}
 	
 	private void updateVisible() {
@@ -140,7 +145,7 @@ public class World extends InputScreen {
 		Graphics.startRender(player.cam, lightSource, depthMap);
 		Graphics.startSolid();
 		for (int r = 0; r < Config.DRAW_DIST; r++) {
-			for (i.newLoop((-r), r); i.doneLoop(); i.cubeLoop()) {
+			for (i.newLoop(-r, r); i.doneLoop(); i.cubeLoop()) {
 				target.setPlus(i, player.currentChunk);
 				if (target.y >= 0 && target.y < World.WORLD_VCHUNK) {
 					if (player.currentChunk.distance(target) < Config.DRAW_DIST) {
@@ -277,9 +282,10 @@ public class World extends InputScreen {
 			Graphics.endRender();
 			if(frameCounter==15){
 				if (player.moved32()) {
-					updateWorldTime();
+					//updateWorldTime();
 					player.updateLastPosition();
 				}
+				updateWorldTime();
 				Graphics.startDepth(lightSource);
 				for(IntMap.Entry entry:chunkMap) {
 					chunk = (Chunk)entry.value;

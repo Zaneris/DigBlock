@@ -16,7 +16,8 @@ import com.badlogic.gdx.utils.TimeUtils;
  */
 public class Player {
 	public PerspectiveCamera cam;
-	private Vector3 lastPosition,tmp,tmp2,out;
+	public Vector3 lastPosition;
+	private Vector3 tmp,tmp2,out;
 	private final Int3 newBlk,curBlk;
 	private Vector2 move,rot;
 	private byte rotCount;

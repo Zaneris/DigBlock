@@ -76,12 +76,12 @@ public final class ChunkMeshGenerator {
 	private static final Vector3 top 	= new Vector3( 1f,0f, 1f);
 	private static final Vector3 bottom = new Vector3( 1f,0f,-1f);
 
-	private static final byte n_Normal = 0;
-	private static final byte s_Normal = 1;
-	private static final byte e_Normal = 2;
-	private static final byte w_Normal = 3;
+	private static final byte w_Normal = 0;
+	private static final byte n_Normal = 1;
+	private static final byte s_Normal = 2;
+	private static final byte e_Normal = 5;
 	private static final byte t_Normal = 4;
-	private static final byte b_Normal = 5;
+	private static final byte b_Normal = 3;
 
 	private static Vector3 d;
 	private static int idx = 0;
@@ -166,28 +166,6 @@ public final class ChunkMeshGenerator {
 		} while (faces>0);
 	}
 
-	private static void addBottomRight() {
-		verts[j.i++] = x;
-		verts[j.i++] = y;
-		verts[j.i++] = z;
-		if (addUV) {
-			verts[j.i++] = tex*4+3;
-		} else {
-			verts[j.i++] = c;
-		}
- 	}
-
-	private static void addTopRight() {
-		verts[j.i++] = x;
-		verts[j.i++] = y + d.y;
-		verts[j.i++] = d==top || d==bottom ? z + d.z : z;
-		if (addUV) {
-			verts[j.i++] = tex*4+2;
-		} else {
-			verts[j.i++] = c;
-		}
-	}
-
 	private static void addTopLeft() {
 		verts[j.i++] = x + d.x;
 		verts[j.i++] = y + d.y;
@@ -199,16 +177,38 @@ public final class ChunkMeshGenerator {
 		}
 	}
 
-	private static void addBottomLeft() {
-		verts[j.i++] = x + d.x;
-		verts[j.i++] = y;
-		verts[j.i++] = d==top || d==bottom ? z : z + d.z;
+	private static void addTopRight() {
+		verts[j.i++] = x;
+		verts[j.i++] = y + d.y;
+		verts[j.i++] = d==top || d==bottom ? z + d.z : z;
 		if (addUV) {
 			verts[j.i++] = tex*4+1;
 		} else {
 			verts[j.i++] = c;
 		}
 	}
+
+	private static void addBottomLeft() {
+		verts[j.i++] = x + d.x;
+		verts[j.i++] = y;
+		verts[j.i++] = d==top || d==bottom ? z : z + d.z;
+		if (addUV) {
+			verts[j.i++] = tex*4+2;
+		} else {
+			verts[j.i++] = c;
+		}
+	}
+
+	private static void addBottomRight() {
+		verts[j.i++] = x;
+		verts[j.i++] = y;
+		verts[j.i++] = z;
+		if (addUV) {
+			verts[j.i++] = tex*4+3;
+		} else {
+			verts[j.i++] = c;
+		}
+ 	}
 
 	private static byte removeFlag(byte faces, byte flag) {
 		return (byte)(faces^flag);
