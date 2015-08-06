@@ -34,9 +34,6 @@ public final class Graphics {
 	private static AssetManager assets;
 	private static ArrayList<Texture> textures;
 	private static FrameBuffer frameBuffer;
-	private static Camera cam;
-	private static Camera light;
-	private static Texture depthMap;
 
 	private static String getShader(String path) {
 		return Gdx.files.internal(path).readString();
@@ -97,12 +94,9 @@ public final class Graphics {
 	}
 	
 	public static void startRender(Camera cam, Camera light, Texture depthMap) {
-		Graphics.cam = cam;
-		Graphics.light = light;
-		Graphics.depthMap = depthMap;
 		shaderOut = shaderTex;
 		shaderTex.begin();
-		bindTextures();
+		bindTextures(depthMap);
 		shaderTex.setUniformMatrix("u_CamMatrix", cam.combined);
 		shaderTex.setUniformMatrix("u_LightMatrix", light.combined);
 		shaderTex.setUniformf("u_LightVector", light.direction);
@@ -112,9 +106,6 @@ public final class Graphics {
 	public static void endRender() {
 		shaderTex.end();
 		shaderOut = null;
-		Graphics.cam = null;
-		Graphics.light = null;
-		Graphics.depthMap = null;
 	}
 	
 	public static void startDepth(Camera light) {
@@ -138,7 +129,7 @@ public final class Graphics {
 		return frameBuffer.getColorBufferTexture();
 	}
 	
-	private static void bindTextures() {
+	private static void bindTextures(Texture depthMap) {
 		if(depthMap!=null) {
 			depthMap.bind(0);
 			shaderTex.setUniformi("u_DepthMap", 0);
