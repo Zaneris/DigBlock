@@ -46,7 +46,8 @@ public class World extends InputScreen {
 	private Texture depthMap;
 	private double seed;
 	private short depth;
-	private float tod;
+	private float tod = 85f;
+	private boolean flip = false;
 
 	/**
 	 * Create the world.
@@ -59,7 +60,6 @@ public class World extends InputScreen {
 		lightSource = new OrthographicCamera();
 		lightSource.near = 1.0f;
 		frameCounter = FPC;
-		tod = 85f;
 		player = new Player();
 		updateDepth();
 	}
@@ -133,9 +133,11 @@ public class World extends InputScreen {
 		lightSource.rotateAround(player.lastPosition, Vector3.Z, tod);
 		lightSource.lookAt(player.lastPosition);
 		lightSource.update();
-		tod -= 20f-(Math.abs(lightSource.direction.x)*19f);
+		tod -= (20f-(Math.abs(lightSource.direction.x)*19f))*(flip?-1f:1f);
 		if(tod<-85f)
-			tod = 85f;
+			flip = true;
+		else if(tod>85f)
+			flip = false;
 	}
 	
 	private void updateVisible() {

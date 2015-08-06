@@ -74,7 +74,10 @@ public final class Graphics {
 		assets.load("textures/Dirt.png", Texture.class, param);
 		assets.load("textures/GrassSide.png", Texture.class, param);
 		assets.load("textures/GrassTop.png", Texture.class, param);
-		frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888,Config.DRAW_DIST*102,Config.DRAW_DIST*102,true);
+		if(Config.MOBILE)
+			frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888,1024,1024,true);
+		else
+			frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888,2048,2048,true);
 	}
 	
 	public static boolean checkAssets() {

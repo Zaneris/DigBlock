@@ -31,14 +31,25 @@ void main() {
 	v_DiffuseUV = texCoords(i);
 	float normData = (a_TexNormal-i)/4.0;
 	i = mod(normData,6.0);
-	if(i<0.5 && u_LightVector.x<0.0) v_Height = (a_Position.y+v_DiffuseUV.y)/256.0;
-	else if(i>4.5 && u_LightVector.x>0.0) v_Height = (a_Position.y+v_DiffuseUV.y)/256.0;
-	else v_Height = a_Position.y/256.0;
 	vec3 depthPos = a_Position;
-	if(i>0.5 && i<2.5) {
-		if(i<1.5) depthPos.z += 0.9;
-		else depthPos.z -= 0.9;
-		depthPos.x += -u_LightVector.x;
+	if((i<0.5 && u_LightVector.x<0.0) 
+			|| (i>4.5 && u_LightVector.x>0.0)
+			|| (i>0.5 && i<2.5))
+		v_Height = (a_Position.y+v_DiffuseUV.y)/256.0;
+	else {
+		if(i<0.5 || i>4.5) {
+			v_Height = (a_Position.y-1.0+v_DiffuseUV.y)/256.0;
+			depthPos.y = depthPos.y-0.5+v_DiffuseUV.y;
+		} else if(i>0.5 && i<2.5) {
+			if(i<1.5) depthPos.z += 0.5;
+			else depthPos.z -= 0.5;
+		} else {
+			float offset = mod(a_Position.y,1.0);
+			if(offset>0.5)
+				v_Height = (a_Position.y + 1.0 - offset)/256.0;
+			else
+				v_Height = a_Position.y/256.0;
+		}
 	}
 	v_DepthMap = (u_LightMatrix*vec4(depthPos, 1.0)).xy*0.5+0.5;
 	v_Light = max(dot(normal(i),-u_LightVector), 0.4)+0.2;
