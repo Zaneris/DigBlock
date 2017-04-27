@@ -1,10 +1,10 @@
-package ca.dev9.tranquil.chunk;
+package ca.valacware.digblock.chunk;
 
-import ca.dev9.tranquil.blocks.Block;
-import ca.dev9.tranquil.screens.World;
-import ca.dev9.tranquil.utils.Int3;
-import ca.dev9.tranquil.utils.ChunkBlock;
-import ca.dev9.tranquil.utils.WorldBuilder;
+import ca.valacware.digblock.blocks.Block;
+import ca.valacware.digblock.screens.World;
+import ca.valacware.digblock.utils.Int3;
+import ca.valacware.digblock.utils.ChunkBlock;
+import ca.valacware.digblock.utils.WorldBuilder;
 
 /**
  * Storage container object for blocks and renderable meshes.

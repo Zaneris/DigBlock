@@ -1,4 +1,4 @@
-package ca.dev9.tranquil.input;
+package ca.valacware.digblock.input;
 
 /**
  * For use by objects that process input.

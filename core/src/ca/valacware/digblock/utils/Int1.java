@@ -1,4 +1,4 @@
-package ca.dev9.tranquil.utils;
+package ca.valacware.digblock.utils;
 
 /**
  * Useful for passing around merely the reference to an integer.

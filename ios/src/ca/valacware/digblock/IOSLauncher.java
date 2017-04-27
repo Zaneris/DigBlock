@@ -1,16 +1,17 @@
-package ca.dev9.tranquil;
+package ca.valacware.digblock;
 
 import org.robovm.apple.foundation.NSAutoreleasePool;
 import org.robovm.apple.uikit.UIApplication;
 
 import com.badlogic.gdx.backends.iosrobovm.IOSApplication;
 import com.badlogic.gdx.backends.iosrobovm.IOSApplicationConfiguration;
+import ca.valacware.digblock.DigBlock;
 
 public class IOSLauncher extends IOSApplication.Delegate {
     @Override
     protected IOSApplication createApplication() {
         IOSApplicationConfiguration config = new IOSApplicationConfiguration();
-        return new IOSApplication(new ScreenManager(), config);
+        return new IOSApplication(new DigBlock(true), config);
     }
 
     public static void main(String[] argv) {

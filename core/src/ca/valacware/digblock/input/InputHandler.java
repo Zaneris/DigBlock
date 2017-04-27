@@ -1,14 +1,14 @@
-package ca.dev9.tranquil.input;
+package ca.valacware.digblock.input;
 
-import ca.dev9.tranquil.Config;
-import ca.dev9.tranquil.screens.InputScreen;
+import ca.valacware.digblock.Config;
+import ca.valacware.digblock.screens.InputScreen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 
 import java.util.ArrayList;
 import com.badlogic.gdx.utils.IntSet;
 import com.badlogic.gdx.utils.*;
-import ca.dev9.tranquil.utils.*;
+import ca.valacware.digblock.utils.*;
 
 /**
  * Handle and process all input to the system/device.

@@ -1,4 +1,4 @@
-package ca.dev9.tranquil;
+package ca.valacware.digblock;
 
 import com.badlogic.gdx.Input;
 

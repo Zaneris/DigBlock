@@ -1,8 +1,8 @@
-package ca.dev9.tranquil.screens;
+package ca.valacware.digblock.screens;
 
-import ca.dev9.tranquil.ScreenManager;
-import ca.dev9.tranquil.input.Input;
-import ca.dev9.tranquil.input.InputHandler;
+import ca.valacware.digblock.DigBlock;
+import ca.valacware.digblock.input.Input;
+import ca.valacware.digblock.input.InputHandler;
 import com.badlogic.gdx.Gdx;
 
 /**
@@ -35,6 +35,6 @@ public abstract class InputScreen extends Input implements ScreenInterface {
 		this.mouseCaught = mouseCaught;
 		Gdx.input.setCursorCatched(mouseCaught);
 		InputHandler.centerMouse();
-		ScreenManager.screens.add(this);
+		DigBlock.screens.add(this);
 	}
 }

@@ -1,7 +1,6 @@
-package ca.dev9.tranquil.chunk;
+package ca.valacware.digblock.chunk;
 
-import ca.dev9.tranquil.Config;
-import ca.dev9.tranquil.screens.World;
+import ca.valacware.digblock.Config;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.VertexAttribute;

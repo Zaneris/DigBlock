@@ -1,4 +1,4 @@
-package ca.dev9.tranquil.utils;
+package ca.valacware.digblock.utils;
 
 /**
  * For 2 dimensional integer objects.

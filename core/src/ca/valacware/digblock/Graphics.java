@@ -1,9 +1,9 @@
-package ca.dev9.tranquil;
+package ca.valacware.digblock;
 
-import ca.dev9.tranquil.chunk.Chunk;
-import ca.dev9.tranquil.chunk.ChunkMap;
-import ca.dev9.tranquil.chunk.ChunkMesh;
-import ca.dev9.tranquil.screens.World;
+import ca.valacware.digblock.chunk.Chunk;
+import ca.valacware.digblock.chunk.ChunkMap;
+import ca.valacware.digblock.chunk.ChunkMesh;
+import ca.valacware.digblock.screens.World;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.TextureLoader;

@@ -1,9 +1,9 @@
-package ca.dev9.tranquil;
+package ca.valacware.digblock;
 
-import ca.dev9.tranquil.blocks.Block;
-import ca.dev9.tranquil.chunk.Chunk;
-import ca.dev9.tranquil.screens.World;
-import ca.dev9.tranquil.utils.Int3;
+import ca.valacware.digblock.blocks.Block;
+import ca.valacware.digblock.chunk.Chunk;
+import ca.valacware.digblock.screens.World;
+import ca.valacware.digblock.utils.Int3;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.math.Vector3;
@@ -161,7 +161,7 @@ public class Player {
 		tmp.set(out).scl(dT);
 		setInt3Plus(newBlk, tmp, -1.5f);
 		Block block = getBlock(newBlk);
-		return block!=null && block.blockType!=Block.AIR;
+		return block!=null && block.blockType!=Block.AIR && block.blockType!=Block.WATER;
 	}
 
 	private boolean blockCollision(float dT, float yOff) {
@@ -169,7 +169,7 @@ public class Player {
 		tmp2.set(out).nor().scl(.25f).add(tmp);
 		setInt3Plus(newBlk, tmp2, yOff);
 		Block block = getBlock(newBlk);
-		return block!=null && block.blockType!=Block.AIR;
+		return block!=null && block.blockType!=Block.AIR && block.blockType!=Block.WATER;
 	}
 
 	private void setInt3Plus(Int3 int3, Vector3 plus, float yOff) {

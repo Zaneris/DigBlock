@@ -1,17 +1,17 @@
-package ca.dev9.tranquil.desktop;
+package ca.valacware.digblock.desktop;
 
-import ca.dev9.tranquil.ScreenManager;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
+import ca.valacware.digblock.DigBlock;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-		config.title="Tranquil-Dev";
-		config.width=854;
-		config.height=480;
+		config.title="DigBlock";
+		config.width=1900;
+		config.height=800;
 		config.samples=4;
 		config.fullscreen=false;
-		new LwjglApplication(new ScreenManager(false), config);
+		new LwjglApplication(new DigBlock(false), config);
 	}
 }

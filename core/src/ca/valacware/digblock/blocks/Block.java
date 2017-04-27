@@ -1,4 +1,4 @@
-package ca.dev9.tranquil.blocks;
+package ca.valacware.digblock.blocks;
 
 import com.badlogic.gdx.graphics.Color;
 

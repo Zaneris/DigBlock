@@ -1,6 +1,6 @@
-package ca.dev9.tranquil.screens;
+package ca.valacware.digblock.screens;
 
-import ca.dev9.tranquil.input.Input;
+import ca.valacware.digblock.input.Input;
 
 import java.util.ArrayList;
 

@@ -1,7 +1,7 @@
-package ca.dev9.tranquil.utils;
+package ca.valacware.digblock.utils;
 
-import ca.dev9.tranquil.blocks.Block;
-import ca.dev9.tranquil.chunk.Chunk;
+import ca.valacware.digblock.blocks.Block;
+import ca.valacware.digblock.chunk.Chunk;
 
 /**
  * For construction of chunks.

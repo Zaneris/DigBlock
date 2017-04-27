@@ -1,4 +1,4 @@
-package ca.dev9.tranquil.utils;
+package ca.valacware.digblock.utils;
 
 import com.badlogic.gdx.math.Vector3;
 

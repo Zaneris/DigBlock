@@ -1,6 +1,6 @@
-package ca.dev9.tranquil.chunk;
+package ca.valacware.digblock.chunk;
 
-import ca.dev9.tranquil.utils.Int3;
+import ca.valacware.digblock.utils.Int3;
 import com.badlogic.gdx.utils.IntMap;
 
 /**

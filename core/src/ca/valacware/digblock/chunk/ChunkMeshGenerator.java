@@ -1,11 +1,10 @@
-package ca.dev9.tranquil.chunk;
+package ca.valacware.digblock.chunk;
 
-import ca.dev9.tranquil.Config;
-import ca.dev9.tranquil.blocks.Block;
-import ca.dev9.tranquil.utils.Int3;
-import ca.dev9.tranquil.utils.Int1;
+import ca.valacware.digblock.Config;
+import ca.valacware.digblock.blocks.Block;
+import ca.valacware.digblock.utils.Int3;
+import ca.valacware.digblock.utils.Int1;
 import com.badlogic.gdx.math.Vector3;
-import java.util.*;
 
 /**
  * Generate the mesh for a given chunk.

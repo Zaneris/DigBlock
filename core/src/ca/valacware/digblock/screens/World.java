@@ -1,10 +1,10 @@
-package ca.dev9.tranquil.screens;
+package ca.valacware.digblock.screens;
 
-import ca.dev9.tranquil.Config;
-import ca.dev9.tranquil.Graphics;
-import ca.dev9.tranquil.chunk.*;
-import ca.dev9.tranquil.Player;
-import ca.dev9.tranquil.utils.*;
+import ca.valacware.digblock.Config;
+import ca.valacware.digblock.Graphics;
+import ca.valacware.digblock.chunk.*;
+import ca.valacware.digblock.Player;
+import ca.valacware.digblock.utils.*;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -15,7 +15,7 @@ import com.badlogic.gdx.utils.IntSet;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import ca.dev9.tranquil.input.*;
+import ca.valacware.digblock.input.*;
 
 /**
  * The world!
@@ -138,6 +138,7 @@ public class World extends InputScreen {
 			flip = true;
 		else if(tod>85f)
 			flip = false;
+		tod = 60f;
 	}
 	
 	private void updateVisible() {
@@ -216,6 +217,8 @@ public class World extends InputScreen {
 				player.jump = true;
 			} else if (key==Config.Keys.QUIT[0] || key==Config.Keys.QUIT[1]) {
 				Gdx.app.exit();
+			} else if (key==Config.Keys.XRAY[0]) {
+				Config.WIREFRAME = !Config.WIREFRAME;
 			}
 		}
 	}

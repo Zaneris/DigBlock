@@ -1,6 +1,6 @@
-package ca.dev9.tranquil.input;
+package ca.valacware.digblock.input;
 
-import ca.dev9.tranquil.utils.Int2;
+import ca.valacware.digblock.utils.Int2;
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.IntSet;
 
