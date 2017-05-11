@@ -3,10 +3,13 @@ attribute float a_TexNormal;
 
 uniform mat4 u_CamMatrix;
 uniform mat4 u_LightMatrix;
+uniform mat4 u_LightMatrix2;
 uniform vec3 u_LightVector;
 varying vec2 v_DiffuseUV;
 varying vec2 v_DepthMap;
+varying vec2 v_DepthMap2;
 varying float v_Tex;
+varying float v_Shadow;
 varying float v_Light;
 varying float v_Height;
 
@@ -31,27 +34,13 @@ void main() {
 	v_DiffuseUV = texCoords(i);
 	float normData = (a_TexNormal-i)/4.0;
 	i = mod(normData,6.0);
-	vec3 depthPos = a_Position;
-	if((i<0.5 && u_LightVector.x<0.0) 
-			|| (i>4.5 && u_LightVector.x>0.0)
-			|| (i>0.5 && i<2.5))
-		v_Height = (a_Position.y+v_DiffuseUV.y)/256.0;
-	else {
-		if(i<0.5 || i>4.5) {
-			v_Height = (a_Position.y-1.0+v_DiffuseUV.y)/256.0;
-			depthPos.y = depthPos.y-0.5+v_DiffuseUV.y;
-		} else if(i>0.5 && i<2.5) {
-			if(i<1.5) depthPos.z += 0.5;
-			else depthPos.z -= 0.5;
-		} else {
-			float offset = mod(a_Position.y,1.0);
-			if(offset>0.5)
-				v_Height = (a_Position.y + 1.0 - offset)/256.0;
-			else
-				v_Height = a_Position.y/256.0;
-		}
-	}
-	v_DepthMap = (u_LightMatrix*vec4(depthPos, 1.0)).xy*0.5+0.5;
+	if((i<0.5 && u_LightVector.x>0.0) || (i>4.5 && u_LightVector.x<0.0) || (i>1.5 && i<2.5))
+	    v_Shadow = 2.0;
+	else if ((i>0.5 && i < 1.5) || (i<0.5 && u_LightVector.x<0.0) || (i>4.5 && u_LightVector.x>0.0)) v_Shadow = 1.0;
+	else v_Shadow = 0.0;
+	v_DepthMap = (u_LightMatrix*vec4(a_Position, 1.0)).xy*0.5+0.5;
+	v_DepthMap2 = (u_LightMatrix2*vec4(a_Position, 1.0)).xy*0.5+0.5;
+	v_Height = a_Position.y/256.0;
 	v_Light = max(dot(normal(i),-u_LightVector), 0.4)+0.2;
 	v_Tex = (normData-i)/6.0;
 	gl_Position = u_CamMatrix * vec4(a_Position, 1.0);

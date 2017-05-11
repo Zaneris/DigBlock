@@ -7,7 +7,7 @@ import com.badlogic.gdx.Input;
  * @author Zaneris
  */
 public final class Config {
-	public static final boolean DEBUG = true;
+	public static final boolean DEBUG = false;
 	public static boolean WIREFRAME = false;
 	public static final float GRAVITY = 9.8f;
 	public static final float TERM_VELOCITY = -20f;

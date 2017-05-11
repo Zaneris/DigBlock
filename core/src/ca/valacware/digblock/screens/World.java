@@ -36,17 +36,21 @@ public class World extends InputScreen {
 	private final ArrayList<Chunk> garbage = new ArrayList<>();
 	private final ArrayList<ChunkMesh> transMesh = new ArrayList<>();
 	private final OrthographicCamera lightSource;
+	private final OrthographicCamera lightSource2;
+	private final Vector3 light2Target = new Vector3();
 	private final ChunkBlock cb = new ChunkBlock();
 	private final Int3 target = new Int3();
 	private final Int3 cC = new Int3();
 	private final Int3 i = new Int3();
 	private final Player player;
-	private boolean curWireframe;
 	private byte frameCounter;
 	private Texture depthMap;
+	private Texture depthMap2;
 	private double seed;
 	private short depth;
-	private float tod = 85f;
+	private float tod = 80f;
+	private float tod2 = tod;
+	private short todCount = 0;
 	private boolean flip = false;
 
 	/**
@@ -56,9 +60,8 @@ public class World extends InputScreen {
 		super(false,true);
 		world = this;
 		seed = Math.random()*10000d;
-		curWireframe = Config.WIREFRAME;
 		lightSource = new OrthographicCamera();
-		lightSource.near = 1.0f;
+		lightSource2 = new OrthographicCamera();
 		frameCounter = FPC;
 		player = new Player();
 		updateDepth();
@@ -66,9 +69,12 @@ public class World extends InputScreen {
 
 	private void updateDepth() {
 		depth = (short)(Config.DRAW_DIST*16*2);
-		lightSource.far = depth;
-		lightSource.viewportHeight = depth;
-		lightSource.viewportWidth = depth;
+		lightSource.viewportHeight = 24;
+		lightSource.viewportWidth = 24;
+		lightSource.far = depth*2;
+		lightSource2.viewportHeight = depth;
+		lightSource2.viewportWidth = depth;
+		lightSource2.far = depth*2;
 		player.cam.far = depth;
 	}
 
@@ -128,24 +134,36 @@ public class World extends InputScreen {
 	}
 
 	private void updateWorldTime() {
-		lightSource.position.set(player.lastPosition);
-		lightSource.position.y += depth/2;
-		lightSource.rotateAround(player.lastPosition, Vector3.Z, tod);
-		lightSource.lookAt(player.lastPosition);
+		lightSource.position.set(player.cam.position);
+		lightSource.position.y += depth;
+		lightSource.lookAt(player.cam.position);
+		lightSource.rotateAround(player.cam.position, Vector3.X, 3f);
+		lightSource.rotateAround(player.cam.position, Vector3.Z, tod);
 		lightSource.update();
-		tod -= (20f-(Math.abs(lightSource.direction.x)*19f))*(flip?-1f:1f);
-		if(tod<-85f)
+		lightSource2.position.set(light2Target);
+		lightSource2.position.y += depth;
+		lightSource2.lookAt(light2Target);
+		lightSource2.rotateAround(light2Target, Vector3.Z, tod2);
+		lightSource2.update();
+		tod -= .001f*(flip?-1f:1f);
+		todCount++;
+		if(todCount>200) {
+			if(light2Target.dst(player.cam.position) > 32f)
+				light2Target.set(player.cam.position);
+			todCount = 0;
+			tod2 = tod;
+		}
+		if(tod<-80f)
 			flip = true;
-		else if(tod>85f)
+		else if(tod>80f)
 			flip = false;
-		tod = 60f;
 	}
 	
 	private void updateVisible() {
 		oldMap.putAll(chunkMap);
 		chunkMap.clear();
 		Chunk chunk;
-		Graphics.startRender(player.cam, lightSource, depthMap);
+		Graphics.startRender(player.cam, lightSource, lightSource2, depthMap, depthMap2);
 		Graphics.startSolid();
 		for (int r = 0; r < Config.DRAW_DIST; r++) {
 			for (i.newLoop(-r, r); i.doneLoop(); i.cubeLoop()) {
@@ -217,15 +235,20 @@ public class World extends InputScreen {
 				player.jump = true;
 			} else if (key==Config.Keys.QUIT[0] || key==Config.Keys.QUIT[1]) {
 				Gdx.app.exit();
-			} else if (key==Config.Keys.XRAY[0]) {
-				Config.WIREFRAME = !Config.WIREFRAME;
 			}
 		}
 	}
 
 	@Override
 	public void processKeysTyped(IntSet keys) {
-
+		IntSet.IntSetIterator iter = keys.iterator();
+		int key;
+		while(iter.hasNext) {
+			key = iter.next();
+			if (key==Config.Keys.XRAY[0]) {
+				Config.WIREFRAME = !Config.WIREFRAME;
+			}
+		}
 	}
 
 	@Override
@@ -271,7 +294,7 @@ public class World extends InputScreen {
 				case 2: updateFaces();
 			}
 			Chunk chunk;
-			Graphics.startRender(player.cam,lightSource,depthMap);
+			Graphics.startRender(player.cam,lightSource,lightSource2,depthMap,depthMap2);
 			Graphics.startSolid();
 			for(IntMap.Entry entry:chunkMap) {
 				chunk = (Chunk)entry.value;
@@ -285,12 +308,21 @@ public class World extends InputScreen {
 			Graphics.endSolid();
 			renderTrans();
 			Graphics.endRender();
-			if(frameCounter==15){
-				if (player.moved32()) {
-					//updateWorldTime();
-					player.updateLastPosition();
+			updateWorldTime();
+			if(todCount==1) {
+				Graphics.startDepth2(lightSource2);
+				for (IntMap.Entry entry : chunkMap) {
+					chunk = (Chunk) entry.value;
+					if (chunk.built) {
+						if (chunk.hasSolidMesh()) {
+							Graphics.renderMesh(chunk.solidMesh);
+							chunk.inDepth = true;
+						} else if (chunk.hasTransMesh())
+							chunk.inDepth = true;
+					}
 				}
-				updateWorldTime();
+				depthMap2 = Graphics.endDepth2();
+			} else {
 				Graphics.startDepth(lightSource);
 				for(IntMap.Entry entry:chunkMap) {
 					chunk = (Chunk)entry.value;

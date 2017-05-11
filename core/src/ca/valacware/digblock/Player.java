@@ -16,7 +16,6 @@ import com.badlogic.gdx.utils.TimeUtils;
  */
 public class Player {
 	public PerspectiveCamera cam;
-	public Vector3 lastPosition;
 	private Vector3 tmp,tmp2,out;
 	private final Int3 newBlk,curBlk;
 	private Vector2 move,rot;
@@ -78,16 +77,6 @@ public class Player {
 				jumpReady = false;
 			jumpTouch = false;
 		}
-	}
-
-	public boolean moved32() {
-		return (lastPosition == null || cam.position.dst2(lastPosition)>1024);
-	}
-
-	public void updateLastPosition() {
-		if(lastPosition==null)
-			lastPosition = new Vector3();
-		lastPosition.set(cam.position);
 	}
 
 	public void axisInput(float x, float y) {

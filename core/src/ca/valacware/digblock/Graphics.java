@@ -34,6 +34,7 @@ public final class Graphics {
 	private static AssetManager assets;
 	private static ArrayList<Texture> textures;
 	private static FrameBuffer frameBuffer;
+	private static FrameBuffer frameBuffer2;
 
 	private static String getShader(String path) {
 		return Gdx.files.internal(path).readString();
@@ -71,10 +72,13 @@ public final class Graphics {
 		assets.load("textures/Dirt.png", Texture.class, param);
 		assets.load("textures/GrassSide.png", Texture.class, param);
 		assets.load("textures/GrassTop.png", Texture.class, param);
-		if(Config.MOBILE)
-			frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888,1024,1024,true);
-		else
-			frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888,2048,2048,true);
+		if(Config.MOBILE) {
+			frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, 1024, 1024, true);
+			frameBuffer2 = new FrameBuffer(Pixmap.Format.RGBA8888, 1024, 1024, true);
+		} else {
+			frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, 2048, 2048, true);
+			frameBuffer2 = new FrameBuffer(Pixmap.Format.RGBA8888, 2048, 2048, true);
+		}
 	}
 	
 	public static boolean checkAssets() {
@@ -93,12 +97,13 @@ public final class Graphics {
 		return false;
 	}
 	
-	public static void startRender(Camera cam, Camera light, Texture depthMap) {
+	public static void startRender(Camera cam, Camera light, Camera light2, Texture depthMap, Texture depthMap2) {
 		shaderOut = shaderTex;
 		shaderTex.begin();
-		bindTextures(depthMap);
+		bindTextures(depthMap, depthMap2);
 		shaderTex.setUniformMatrix("u_CamMatrix", cam.combined);
 		shaderTex.setUniformMatrix("u_LightMatrix", light.combined);
+		shaderTex.setUniformMatrix("u_LightMatrix2", light2.combined);
 		shaderTex.setUniformf("u_LightVector", light.direction);
 		shaderTex.setUniformf("u_Alpha", 1f);
 	}
@@ -128,20 +133,43 @@ public final class Graphics {
 		frameBuffer.end();
 		return frameBuffer.getColorBufferTexture();
 	}
+
+	public static void startDepth2(Camera light) {
+		frameBuffer2.begin();
+		Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
+		Gdx.gl.glEnable(GL20.GL_CULL_FACE);
+		Gdx.gl.glCullFace(GL20.GL_BACK);
+		shaderOut = shaderDepth;
+		shaderDepth.begin();
+		shaderDepth.setUniformMatrix("u_LightMatrix", light.combined);
+	}
+
+	public static Texture endDepth2() {
+		shaderDepth.end();
+		shaderOut = null;
+		Gdx.gl.glDisable(GL20.GL_CULL_FACE);
+		Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
+		frameBuffer2.end();
+		return frameBuffer2.getColorBufferTexture();
+	}
 	
-	private static void bindTextures(Texture depthMap) {
+	private static void bindTextures(Texture depthMap, Texture depthMap2) {
 		if(depthMap!=null) {
 			depthMap.bind(0);
 			shaderTex.setUniformi("u_DepthMap", 0);
+			depthMap2.bind(1);
+			shaderTex.setUniformi("u_DepthMap2", 1);
 		}
-		textures.get(0).bind(1);
-		shaderTex.setUniformi("u_Water", 1);
-		textures.get(1).bind(2);
-		shaderTex.setUniformi("u_Dirt", 2);
-		textures.get(2).bind(3);
-		shaderTex.setUniformi("u_GrassSide", 3);
-		textures.get(3).bind(4);
-		shaderTex.setUniformi("u_GrassTop", 4);
+		textures.get(0).bind(2);
+		shaderTex.setUniformi("u_Water", 2);
+		textures.get(1).bind(3);
+		shaderTex.setUniformi("u_Dirt", 3);
+		textures.get(2).bind(4);
+		shaderTex.setUniformi("u_GrassSide", 4);
+		textures.get(3).bind(5);
+		shaderTex.setUniformi("u_GrassTop", 5);
 	}
 	
 	public static void startSolid() {
